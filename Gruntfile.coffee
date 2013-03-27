@@ -7,7 +7,14 @@ module.exports = (grunt) ->
 
     coffeelint:
       options:
-        indentation: 2
+        indentation:         2
+        no_empty_param_list: true
+        no_tabs:             true
+        no_stand_alone_at:   true
+
+      gruntfile:
+        files:
+          src: "Gruntfile.coffee"
 
       test:
         files:
@@ -19,15 +26,15 @@ module.exports = (grunt) ->
 
     watch:
       gruntfile:
-        files: "<%= jshint.gruntfile.src %>"
-        tasks: ["jshint:gruntfile"]
+        files: "<%= coffeelint.gruntfile.files.src %>"
+        tasks: ["coffeelint:gruntfile"]
 
       src:
         files: "src/*.coffee"
-        tasks: ["default"]
+        tasks: ["coffeelint:src", "coffee:src"]
 
       test:
-        files: "<%= jshint.test.src %>"
+        files: "<%= coffeelint.test.files.src %>"
         tasks: ["coffeelint:test", "nodeunit"]
 
     coffee:
