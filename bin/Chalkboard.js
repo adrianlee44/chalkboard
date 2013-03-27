@@ -11,4 +11,4 @@
 var path = require('path');
 var fs = require('fs');
 var dir = path.join(path.dirname(fs.realpathSync(__filename)), '../');
-require(dir + 'chalkboard.js').run();
+require(dir + 'chalkboard.js').run(process.argv);
