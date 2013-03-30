@@ -8,7 +8,7 @@
  * Licensed under the MIT license.
  */
 
-var path = require('path');
-var fs = require('fs');
-var dir = path.join(path.dirname(fs.realpathSync(__filename)), '../');
+var path = require('path'),
+    fs   = require('fs'),
+    dir  = path.join(path.dirname(fs.realpathSync(__filename)), '../');
 require(dir + 'chalkboard.js').run(process.argv);
