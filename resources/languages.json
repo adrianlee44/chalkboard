@@ -1,0 +1,4 @@
+{
+  ".coffee":  {"name": "coffeescript", "comment": "#"},
+  "Cakefile": {"name": "coffeescript", "comment": "#"}
+}
