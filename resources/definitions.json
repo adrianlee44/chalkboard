@@ -1,0 +1,36 @@
+{
+    "name": {
+        "multipleLines": true
+    },
+    "description": {
+        "multipleLines": true
+    },
+    "author": {},
+    "copyright": {},
+    "url": {},
+    "license": {},
+    "param": {
+        "hasArgs": true,
+        "hasMultiple": true
+    },
+    "function": {
+        "typeIdentifier": true
+    },
+    "returns": {
+        "hasArgs": true,
+        "hasMultiple": true
+    },
+    "variable": {
+        "typeIdentifier": true
+    },
+    "default": {},
+    "deprecated": {},
+    "version": {},
+    "dependencies": {
+        "multipleLines": true,
+        "hasMultiple": true
+    },
+    "example": {
+        "multipleLines": true
+    }
+}
