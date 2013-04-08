@@ -40,6 +40,7 @@
   "dependencies": {
     "commander": "~1.1.1",
     "wrench": "~1.4.4",
-    "underscore": "~1.4.4"
+    "underscore": "~1.4.4",
+    "marked": "~0.2.8"
   }
 }
