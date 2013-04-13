@@ -1,17 +1,17 @@
 {
-    "name": {
-        "multipleLines": true
-    },
+    "name": {},
     "description": {
         "multipleLines": true
     },
     "author": {},
+    "email": {},
     "copyright": {},
     "url": {},
     "license": {},
     "param": {
         "hasArgs": true,
-        "hasMultiple": true
+        "hasMultiple": true,
+        "displayName": "parameters"
     },
     "function": {
         "typeIdentifier": true
@@ -26,11 +26,19 @@
     "default": {},
     "deprecated": {},
     "version": {},
+    "private": {
+        "accessIdentifier": true
+    },
+    "public": {
+        "accessIdentifier": true
+    },
     "dependencies": {
-        "multipleLines": true,
-        "hasMultiple": true
+        "multipleLines": true
     },
     "example": {
+        "multipleLines": true
+    },
+    "TODO": {
         "multipleLines": true
     }
 }
