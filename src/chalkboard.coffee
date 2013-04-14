@@ -32,7 +32,7 @@
 ##
 ## @name Usage
 ## @description
-##  Usage: chalkboard.js [options] [FILES...]
+##  Usage: chalkboard [options] [FILES...]
 ##  Options:
 ##    -h, --help           output usage information
 ##    -V, --version        output the version number

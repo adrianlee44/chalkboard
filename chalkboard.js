@@ -1,5 +1,5 @@
 (function() {
-  var Chalkboard, NEW_LINE, argsRegex, commentBlock, commentRegex, configure, defaults, definitions, format, fs, languages, marked, opts, parse, path, pkg, program, read, returnRegex, run, wrench, write, _, _capitalize, _formatKeyValue, _repeatChar, _setAttribute;
+  var Chalkboard, NEW_LINE, argsRegex, commentRegex, commentRegexStr, configure, defaults, definitions, ext, format, fs, lang, languages, marked, parse, path, pkg, processFiles, program, read, regex, returnRegex, run, wrench, write, _, _capitalize, _formatKeyValue, _getLanguages, _repeatChar, _setAttribute;
 
   program = require("commander");
 
@@ -19,17 +19,22 @@
 
   definitions = require("./resources/definitions.json");
 
-  commentRegex = /^\s*#{1,2}\s*(?:@(\w+))?(?:\s*(.*))?/;
+  commentRegexStr = "\\s*(?:@(\\w+))?(?:\\s*(.*))?";
+
+  commentRegex = new RegExp(commentRegexStr);
 
   argsRegex = /\{([\w\|]+)}\s([\w\d_-]+)\s(.*)/;
-
-  commentBlock = /^\s*###\s*/;
 
   returnRegex = /\{([\w\|]+)}\s(.*)/;
 
   NEW_LINE = /\n\r?/;
 
-  opts = {};
+  for (ext in languages) {
+    lang = languages[ext];
+    regex = "^\\s*" + lang.symbol + "{1,2}" + commentRegexStr;
+    lang.commentRegex = new RegExp(regex);
+    lang.blockRegex = new RegExp(lang.block);
+  }
 
   defaults = {
     format: "markdown",
@@ -51,6 +56,14 @@
     return Array(count + 1).join(char);
   };
 
+  _getLanguages = function(source, options) {
+    if (options == null) {
+      options = {};
+    }
+    ext = path.extname(source) || path.basename(source);
+    return languages[ext];
+  };
+
   _setAttribute = function(object, key, value, options) {
     var _ref, _ref1;
 
@@ -67,17 +80,25 @@
     }
   };
 
-  parse = function(code) {
-    var allSections, argObject, argsMatch, currentSection, def, hasComment, key, line, match, matchingRegex, multiLineKey, newValue, value, _i, _len, _ref;
+  parse = function(code, lang, options) {
+    var allSections, argObject, argsMatch, currentSection, def, hasComment, inCommentBlock, key, line, match, matchingRegex, multiLineKey, newValue, value, _i, _len, _ref;
 
+    if (options == null) {
+      options = {};
+    }
     hasComment = false;
     multiLineKey = "";
+    inCommentBlock = false;
     allSections = [];
     currentSection = {};
     _ref = code.split(NEW_LINE);
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       line = _ref[_i];
-      if ((match = line.match(commentRegex))) {
+      if ((match = line.match(lang.blockRegex))) {
+        inCommentBlock = !inCommentBlock;
+        continue;
+      }
+      if ((inCommentBlock && (match = line.match(commentRegex))) || (match = line.match(lang.commentRegex))) {
         hasComment = true;
         key = match[1];
         value = match[2];
@@ -129,7 +150,7 @@
           }
         }
         if (multiLineKey && (value != null)) {
-          newValue = "" + value + "\n\n";
+          newValue = "" + value + "  \n";
           _setAttribute(currentSection, multiLineKey, newValue, def);
         }
       } else {
@@ -161,14 +182,14 @@
         element = value[_i];
         if (_(element).isObject()) {
           if (element.name != null) {
-            output += "**" + element.name + "**\n\n";
+            output += "**" + element.name + "**\n";
           }
           if (element.type != null) {
-            output += "Type: `" + element.type + "`\n\n";
+            output += "Type: `" + element.type + "`\n";
           }
-          output += "" + element.description + "\n\n";
+          output += "" + element.description + "  \n";
         } else {
-          output += "-   " + element + "\n";
+          output += "-   " + element + "  \n";
         }
       }
     } else if (_(value).isString()) {
@@ -180,7 +201,7 @@
     return output;
   };
 
-  format = function(sections) {
+  format = function(sections, options) {
     var copyrightAndLicense, footer, index, key, omitList, output, section, value, _i, _len, _ref;
 
     output = "";
@@ -246,12 +267,16 @@
     return output;
   };
 
-  read = function(file, callback) {
+  read = function(file, options, callback) {
     var relative, stat;
 
+    if (options == null) {
+      options = {};
+    }
     stat = fs.existsSync(file) && fs.statSync(file);
     relative = path.relative(__dirname, file);
     if (stat && stat.isFile()) {
+      lang = _getLanguages(file, options);
       return fs.readFile(file, function(error, buffer) {
         var content, data, parsedSections;
 
@@ -259,28 +284,31 @@
           callback(error);
         }
         data = buffer.toString();
-        parsedSections = parse(data);
-        content = format(parsedSections);
-        write(relative, content);
-        return callback(relative);
+        parsedSections = parse(data, lang, options);
+        content = format(parsedSections, options);
+        write(relative, content, options);
+        return typeof callback === "function" ? callback(relative) : void 0;
       });
     } else if (stat && stat.isDirectory()) {
 
     } else {
-      return callback("Invalid file path - " + file);
+      return typeof callback === "function" ? callback("Invalid file path - " + file) : void 0;
     }
   };
 
-  write = function(source, content) {
+  write = function(source, content, options) {
     var dir, filePath, filename, output;
 
-    if (program.join != null) {
-      output = path.join(__dirname, program.join);
+    if (options == null) {
+      options = {};
+    }
+    if (options.join != null) {
+      output = path.join(__dirname, options.join);
       return fs.appendFileSync(output, content);
-    } else if (program.output != null) {
+    } else if (options.output != null) {
       filename = path.basename(source, path.extname(source));
       filePath = path.join(path.dirname(source), filename) + ".md";
-      output = path.join(__dirname, program.output, filePath);
+      output = path.join(__dirname, options.output, filePath);
       dir = path.dirname(output);
       if (!fs.existsSync(dir)) {
         wrench.mkdirSyncRecursive(dir, 0x1ff);
@@ -292,17 +320,9 @@
   };
 
   configure = function(options) {
+    var joinfilePath, opts;
+
     opts = _.extend({}, defaults, _(options).pick(_(defaults).keys()));
-    return console.log(opts);
-  };
-
-  run = function(argv) {
-    var callback, doc, docPath, documents, fullPath, joinfilePath, stat, userFile, userFilesList, _i, _len, _ref, _results;
-
-    if (argv == null) {
-      argv = {};
-    }
-    program.version(pkg.version).usage("[options] [FILES...]").option("-o, --output [DIR]", "Documentation output file").option("-j, --join [FILE]", "Combine all documentation into one page").option("-f, --format [TYPE]", "Output format. Default to markdown").parse(argv);
     if (program.output && program.join) {
       console.error("Cannot use both output and join option at the same time");
       return process.exit(1);
@@ -313,9 +333,14 @@
         fs.unlinkSync(joinfilePath);
       }
     }
-    if ((_ref = program.format) == null) {
-      program.format = "markdown";
-    }
+    opts.files = options.args || [];
+    return opts;
+  };
+
+  processFiles = function(options) {
+    var callback, doc, docPath, documents, fullPath, opts, stat, userFile, _i, _len, _ref, _results;
+
+    opts = configure(options);
     callback = function(source, error) {
       if (error != null) {
         console.error(error);
@@ -323,34 +348,42 @@
       }
       return console.log("Generated documentation for " + source);
     };
-    userFilesList = program.args;
-    if (userFilesList.length) {
-      _results = [];
-      for (_i = 0, _len = userFilesList.length; _i < _len; _i++) {
-        userFile = userFilesList[_i];
-        stat = fs.statSync(userFile);
-        if (stat.isDirectory()) {
-          documents = wrench.readdirSyncRecursive(userFile);
-          documents = _(documents).chain().flatten().unique().value();
-          _results.push((function() {
-            var _j, _len1, _results1;
+    _ref = opts.files;
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      userFile = _ref[_i];
+      stat = fs.statSync(userFile);
+      if (stat.isDirectory()) {
+        documents = wrench.readdirSyncRecursive(userFile);
+        documents = _(documents).chain().flatten().unique().value();
+        _results.push((function() {
+          var _j, _len1, _results1;
 
-            _results1 = [];
-            for (_j = 0, _len1 = documents.length; _j < _len1; _j++) {
-              doc = documents[_j];
-              docPath = path.join(__dirname, userFile, doc);
-              _results1.push(read(docPath, callback));
-            }
-            return _results1;
-          })());
-        } else if (stat.isFile()) {
-          fullPath = path.join(__dirname, userFile);
-          _results.push(read(fullPath, callback));
-        } else {
-          _results.push(void 0);
-        }
+          _results1 = [];
+          for (_j = 0, _len1 = documents.length; _j < _len1; _j++) {
+            doc = documents[_j];
+            docPath = path.join(__dirname, userFile, doc);
+            _results1.push(read(docPath, opts, callback));
+          }
+          return _results1;
+        })());
+      } else if (stat.isFile()) {
+        fullPath = path.join(__dirname, userFile);
+        _results.push(read(fullPath, opts, callback));
+      } else {
+        _results.push(void 0);
       }
-      return _results;
+    }
+    return _results;
+  };
+
+  run = function(argv) {
+    if (argv == null) {
+      argv = {};
+    }
+    program.version(pkg.version).usage("[options] [FILES...]").option("-o, --output [DIR]", "Documentation output file").option("-j, --join [FILE]", "Combine all documentation into one page").option("-f, --format [TYPE]", "Output format. Default to markdown").parse(argv);
+    if (program.args.length) {
+      return processFiles(program);
     } else {
       return console.error(program.helpInformation());
     }
@@ -358,7 +391,10 @@
 
   Chalkboard = module.exports = {
     parse: parse,
-    run: run
+    run: run,
+    read: read,
+    write: write,
+    processFiles: processFiles
   };
 
 }).call(this);
