@@ -57,6 +57,7 @@ commentRegex    = new RegExp commentRegexStr
 argsRegex       = /\{([\w\|]+)}\s([\w\d_-]+)\s(.*)/
 returnRegex     = /\{([\w\|]+)}\s(.*)/
 NEW_LINE        = /\n\r?/
+cwd             = process.cwd()
 
 for ext, lang of languages
   regex = "^\\s*#{lang.symbol}{1,2}#{commentRegexStr}"
@@ -316,7 +317,7 @@ format = (sections, options) ->
 #
 read = (file, options = {}, callback) ->
   stat     = fs.existsSync(file) && fs.statSync(file)
-  relative = path.relative __dirname, file
+  relative = path.relative cwd, file
 
   if stat and stat.isFile()
     lang = _getLanguages file, options
@@ -348,14 +349,14 @@ read = (file, options = {}, callback) ->
 write = (source, content, options = {}) ->
   # Check if all the generated documentations are written to one file
   if options.join?
-    output = path.join __dirname, options.join
+    output = path.join cwd, options.join
     fs.appendFileSync output, content
 
   # Check if output folder is specify
   else if options.output?
     filename = path.basename source, path.extname(source)
     filePath = path.join(path.dirname(source), filename) + ".md"
-    output   = path.join __dirname, options.output, filePath
+    output   = path.join cwd, options.output, filePath
     dir      = path.dirname output
 
     unless fs.existsSync dir
@@ -375,7 +376,9 @@ configure = (options) ->
 
   # clean the existing file if all comments are compiled to one location
   if program.join?
-    joinfilePath = path.join __dirname, program.join
+    joinfilePath = path.join cwd, program.join
+
+    # Clear the original file by write empty string into it
     fs.unlinkSync(joinfilePath) if fs.existsSync joinfilePath
 
   opts.files = options.args or []
@@ -403,11 +406,11 @@ processFiles = (options)->
                     .value()
 
       for doc in documents
-        docPath = path.join __dirname, userFile, doc
+        docPath = path.join cwd, userFile, doc
         read docPath, opts, callback
 
     else if stat.isFile()
-      fullPath = path.join __dirname, userFile
+      fullPath = path.join cwd, userFile
       read fullPath, opts, callback
 
 #

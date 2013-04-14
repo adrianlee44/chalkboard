@@ -1,5 +1,5 @@
 (function() {
-  var Chalkboard, NEW_LINE, argsRegex, commentRegex, commentRegexStr, configure, defaults, definitions, ext, format, fs, lang, languages, marked, parse, path, pkg, processFiles, program, read, regex, returnRegex, run, wrench, write, _, _capitalize, _formatKeyValue, _getLanguages, _repeatChar, _setAttribute;
+  var Chalkboard, NEW_LINE, argsRegex, commentRegex, commentRegexStr, configure, cwd, defaults, definitions, ext, format, fs, lang, languages, marked, parse, path, pkg, processFiles, program, read, regex, returnRegex, run, wrench, write, _, _capitalize, _formatKeyValue, _getLanguages, _repeatChar, _setAttribute;
 
   program = require("commander");
 
@@ -28,6 +28,8 @@
   returnRegex = /\{([\w\|]+)}\s(.*)/;
 
   NEW_LINE = /\n\r?/;
+
+  cwd = process.cwd();
 
   for (ext in languages) {
     lang = languages[ext];
@@ -274,7 +276,7 @@
       options = {};
     }
     stat = fs.existsSync(file) && fs.statSync(file);
-    relative = path.relative(__dirname, file);
+    relative = path.relative(cwd, file);
     if (stat && stat.isFile()) {
       lang = _getLanguages(file, options);
       return fs.readFile(file, function(error, buffer) {
@@ -303,12 +305,12 @@
       options = {};
     }
     if (options.join != null) {
-      output = path.join(__dirname, options.join);
+      output = path.join(cwd, options.join);
       return fs.appendFileSync(output, content);
     } else if (options.output != null) {
       filename = path.basename(source, path.extname(source));
       filePath = path.join(path.dirname(source), filename) + ".md";
-      output = path.join(__dirname, options.output, filePath);
+      output = path.join(cwd, options.output, filePath);
       dir = path.dirname(output);
       if (!fs.existsSync(dir)) {
         wrench.mkdirSyncRecursive(dir, 0x1ff);
@@ -328,7 +330,7 @@
       return process.exit(1);
     }
     if (program.join != null) {
-      joinfilePath = path.join(__dirname, program.join);
+      joinfilePath = path.join(cwd, program.join);
       if (fs.existsSync(joinfilePath)) {
         fs.unlinkSync(joinfilePath);
       }
@@ -362,13 +364,13 @@
           _results1 = [];
           for (_j = 0, _len1 = documents.length; _j < _len1; _j++) {
             doc = documents[_j];
-            docPath = path.join(__dirname, userFile, doc);
+            docPath = path.join(cwd, userFile, doc);
             _results1.push(read(docPath, opts, callback));
           }
           return _results1;
         })());
       } else if (stat.isFile()) {
-        fullPath = path.join(__dirname, userFile);
+        fullPath = path.join(cwd, userFile);
         _results.push(read(fullPath, opts, callback));
       } else {
         _results.push(void 0);
