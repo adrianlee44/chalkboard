@@ -1,4 +1,4 @@
 {
-  ".coffee":  {"name": "coffeescript", "comment": "#"},
-  "Cakefile": {"name": "coffeescript", "comment": "#"}
+  ".coffee":  {"name": "coffeescript", "symbol": "#", "block": "###"},
+  "Cakefile": {"name": "coffeescript", "symbol": "#", "block": "###"}
 }

@@ -20,13 +20,25 @@
 ## - Implement @default tag
 ## - Implement @deprecated tag
 ## - Implement @version tag
-## - Implement comment block
+## - Implement configuration for different languages
 ##
 
 ##
 ## @name Getting Started
 ## @description
-## Install the module with: `npm install Chalkboard`
+## Install the module with: `npm install -g chalkboard`
+##
+
+##
+## @name Usage
+## @description
+##  Usage: chalkboard.js [options] [FILES...]
+##  Options:
+##    -h, --help           output usage information
+##    -V, --version        output the version number
+##    -o, --output [DIR]   Documentation output file
+##    -j, --join [FILE]    Combine all documentation into one page
+##    -f, --format [TYPE]  Output format. Default to markdown
 ##
 
 program = require "commander"
@@ -40,13 +52,17 @@ pkg         = require "./package.json"
 languages   = require "./resources/languages.json"
 definitions = require "./resources/definitions.json"
 
-commentRegex = /^\s*#{1,2}\s*(?:@(\w+))?(?:\s*(.*))?/
-argsRegex    = /\{([\w\|]+)}\s([\w\d_-]+)\s(.*)/
-commentBlock = /^\s*###\s*/
-returnRegex  = /\{([\w\|]+)}\s(.*)/
-NEW_LINE     = /\n\r?/
+commentRegexStr = "\\s*(?:@(\\w+))?(?:\\s*(.*))?"
+commentRegex    = new RegExp commentRegexStr
+argsRegex       = /\{([\w\|]+)}\s([\w\d_-]+)\s(.*)/
+returnRegex     = /\{([\w\|]+)}\s(.*)/
+NEW_LINE        = /\n\r?/
 
-opts     = {}
+for ext, lang of languages
+  regex = "^\\s*#{lang.symbol}{1,2}#{commentRegexStr}"
+  lang.commentRegex = new RegExp regex
+  lang.blockRegex   = new RegExp lang.block
+
 defaults =
   format: "markdown"
   output: null
@@ -58,6 +74,10 @@ _capitalize = (str = "") ->
 
 _repeatChar = (char, count) ->
   Array(count+1).join char
+
+_getLanguages = (source, options = {}) ->
+  ext = path.extname(source) or path.basename(source)
+  return languages[ext]
 
 #
 # @function
@@ -85,17 +105,26 @@ _setAttribute = (object, key, value, options) ->
 # @description
 # Run through code and parse out all the comments
 # @param {String} code Source code to be parsed
+# @param {Object} lang Language settings for the file
+# @param {Object} options User settings
 # @returns {Array} List of objects with all the comment block
 #
-parse = (code)->
-  hasComment   = false
-  multiLineKey = ""
+parse = (code, lang, options = {})->
+  hasComment     = false
+  multiLineKey   = ""
+  inCommentBlock = false
 
   allSections    = []
   currentSection = {}
 
   for line in code.split(NEW_LINE)
-    if (match = line.match commentRegex)
+    if (match = line.match lang.blockRegex)
+      inCommentBlock = not inCommentBlock
+      continue
+
+    if (inCommentBlock and match = line.match commentRegex) or
+        (match = line.match lang.commentRegex)
+
       hasComment = true
       key        = match[1]
       value      = match[2]
@@ -157,7 +186,7 @@ parse = (code)->
       # When key doesn't exist and multi line key is set,
       # add the value to the original key
       if multiLineKey and value?
-        newValue = "#{value}\n\n"
+        newValue = "#{value}  \n"
         _setAttribute currentSection, multiLineKey, newValue, def
 
     else
@@ -193,12 +222,12 @@ _formatKeyValue = (key, value, newLine = true, headerLevel = 4) ->
       # returns and param
       if _(element).isObject()
         if element.name?
-          output += "**#{element.name}**\n\n"
+          output += "**#{element.name}**\n"
         if element.type?
-          output += "Type: `#{element.type}`\n\n"
-        output += "#{element.description}\n\n"
+          output += "Type: `#{element.type}`\n"
+        output += "#{element.description}  \n"
       else
-        output += "-   #{element}\n"
+        output += "-   #{element}  \n"
 
   else if _(value).isString()
     output += "#{value}"
@@ -213,9 +242,10 @@ _formatKeyValue = (key, value, newLine = true, headerLevel = 4) ->
 # @description
 # Format comment sections into readable format
 # @param {Array} sections List of comment sections
+# @param {Object} options
 # @returns {String} Formatted markdown code
 #
-format = (sections) ->
+format = (sections, options) ->
   output = ""
   footer = ""
   for section, index in sections
@@ -280,27 +310,31 @@ format = (sections) ->
 # @description
 # Read the content of the file
 # @param {String} file File path
+# @param {Object} options User options
+# @param {Function} callback Read callback
 # @returns {Boolean} File has been read successfully
 #
-read = (file, callback) ->
+read = (file, options = {}, callback) ->
   stat     = fs.existsSync(file) && fs.statSync(file)
   relative = path.relative __dirname, file
 
   if stat and stat.isFile()
+    lang = _getLanguages file, options
+
     fs.readFile file, (error, buffer) ->
       callback error if error?
 
       data           = buffer.toString()
-      parsedSections = parse data
-      content        = format parsedSections
-      write relative, content
-      callback relative
+      parsedSections = parse data, lang, options
+      content        = format parsedSections, options
+      write relative, content, options
+      callback? relative
 
   else if stat and stat.isDirectory()
     # do nothing
 
   else
-    callback "Invalid file path - #{file}"
+    callback? "Invalid file path - #{file}"
 
 #
 # @function
@@ -309,18 +343,19 @@ read = (file, callback) ->
 # Write parsed content into the output file
 # @param {String} source File path of original file
 # @param {String} content Content to write to file
+# @param {Object} options
 #
-write = (source, content) ->
+write = (source, content, options = {}) ->
   # Check if all the generated documentations are written to one file
-  if program.join?
-    output = path.join __dirname, program.join
+  if options.join?
+    output = path.join __dirname, options.join
     fs.appendFileSync output, content
 
   # Check if output folder is specify
-  else if program.output?
+  else if options.output?
     filename = path.basename source, path.extname(source)
     filePath = path.join(path.dirname(source), filename) + ".md"
-    output   = path.join __dirname, program.output, filePath
+    output   = path.join __dirname, options.output, filePath
     dir      = path.dirname output
 
     unless fs.existsSync dir
@@ -334,7 +369,46 @@ write = (source, content) ->
 configure = (options) ->
   opts = _.extend {}, defaults, _(options).pick(_(defaults).keys())
 
-  console.log opts
+  if program.output and program.join
+    console.error "Cannot use both output and join option at the same time"
+    return process.exit 1
+
+  # clean the existing file if all comments are compiled to one location
+  if program.join?
+    joinfilePath = path.join __dirname, program.join
+    fs.unlinkSync(joinfilePath) if fs.existsSync joinfilePath
+
+  opts.files = options.args or []
+
+  return opts
+
+processFiles = (options)->
+  opts = configure options
+
+  callback = (source, error) ->
+    if error?
+      console.error error
+      process.exit 1
+
+    console.log "Generated documentation for #{source}"
+
+  for userFile in opts.files
+    stat = fs.statSync userFile
+
+    if stat.isDirectory()
+      documents = wrench.readdirSyncRecursive userFile
+      documents = _(documents).chain()
+                    .flatten()
+                    .unique()
+                    .value()
+
+      for doc in documents
+        docPath = path.join __dirname, userFile, doc
+        read docPath, opts, callback
+
+    else if stat.isFile()
+      fullPath = path.join __dirname, userFile
+      read fullPath, opts, callback
 
 #
 # @function
@@ -352,46 +426,9 @@ run = (argv = {})->
     .option("-f, --format [TYPE]", "Output format. Default to markdown")
     .parse argv
 
-  if program.output and program.join
-    console.error "Cannot use both output and join option at the same time"
-    return process.exit 1
-
-  # clean the existing file if all comments are compiled to one location
-  if program.join?
-    joinfilePath = path.join __dirname, program.join
-    fs.unlinkSync(joinfilePath) if fs.existsSync joinfilePath
-
-  # Default format to markdown
-  program.format ?= "markdown"
-
-  callback = (source, error) ->
-    if error?
-      console.error error
-      process.exit 1
-
-    console.log "Generated documentation for #{source}"
-
-  userFilesList = program.args
-  if userFilesList.length
-    for userFile in userFilesList
-      stat = fs.statSync userFile
-
-      if stat.isDirectory()
-        documents = wrench.readdirSyncRecursive userFile
-        documents = _(documents).chain()
-                      .flatten()
-                      .unique()
-                      .value()
-
-        for doc in documents
-          docPath = path.join __dirname, userFile, doc
-          read docPath, callback
-
-      else if stat.isFile()
-        fullPath = path.join __dirname, userFile
-        read fullPath, callback
-
+  if program.args.length
+    processFiles program
   else
     console.error program.helpInformation()
 
-Chalkboard = module.exports = {parse, run}
+Chalkboard = module.exports = {parse, run, read, write, processFiles}
