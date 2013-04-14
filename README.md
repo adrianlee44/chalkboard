@@ -3,26 +3,17 @@
 ===
 An npm package that generate better documentation
 
-
 #### Dependencies
 - commander
-
 - wrench
-
 - marked
-
 - underscore
-
 
 #### TODO
 - Implement @default tag
-
 - Implement @deprecated tag
-
 - Implement @version tag
-
 - Implement comment block
-
 
 
 Getting Started
@@ -31,12 +22,22 @@ Getting Started
 Install the module with: `npm install Chalkboard`
 
 
+Usage
+---
+
+Usage: chalkboard.js [options] [FILES...]
+Options:
+-h, --help           output usage information
+-V, --version        output the version number
+-o, --output [DIR]   Documentation output file
+-j, --join [FILE]    Combine all documentation into one page
+-f, --format [TYPE]  Output format. Default to markdown
+
 
 parse
 ---
 
 Run through code and parse out all the comments
-
 
 #### Type
 function
@@ -60,7 +61,6 @@ format
 
 Format comment sections into readable format
 
-
 #### Type
 function
 #### Parameters
@@ -82,7 +82,6 @@ read
 ---
 
 Read the content of the file
-
 
 #### Type
 function
@@ -106,7 +105,6 @@ write
 
 Write parsed content into the output file
 
-
 #### Type
 function
 #### Parameters
@@ -128,7 +126,6 @@ run
 ---
 
 Start the process of generating documentation with source code
-
 
 #### Type
 function
