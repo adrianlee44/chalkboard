@@ -21,7 +21,7 @@
       "url": "https://github.com/adrianlee44/chalkboard/blob/master/LICENSE-MIT"
     }
   ],
-  "main": "lib/chalkboard",
+  "bin": "bin/chalkboard",
   "engines": {
     "node": ">= 0.8.0"
   },
