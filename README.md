@@ -10,10 +10,7 @@ An npm package that generate better documentation
 - underscore  
 
 #### TODO
-- Implement @default tag  
-- Implement @deprecated tag  
-- Implement @version tag  
-- Implement configuration for different languages  
+[TODO Wiki](https://github.com/adrianlee44/chalkboard/wiki/TODO)  
 
 
 Getting Started
@@ -25,7 +22,7 @@ Install the module with: `npm install -g chalkboard`
 Usage
 ---
 
-Usage: chalkboard.js [options] [FILES...]  
+Usage: chalkboard [options] [FILES...]  
 Options:  
 -h, --help           output usage information  
 -V, --version        output the version number  
@@ -121,9 +118,9 @@ Start the process of generating documentation with source code
 #### Type
 function
 #### Parameters
-**List**
+**argv**
 Type: `Array`
-of arguments  
+List of arguments  
 
 ## Author
 Adrian Lee (adrian@radianstudio.com)

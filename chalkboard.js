@@ -1,5 +1,5 @@
 (function() {
-  var Chalkboard, NEW_LINE, argsRegex, commentRegex, commentRegexStr, configure, cwd, defaults, definitions, ext, format, fs, lang, languages, marked, parse, path, pkg, processFiles, program, read, regex, returnRegex, run, wrench, write, _, _capitalize, _formatKeyValue, _getLanguages, _repeatChar, _setAttribute;
+  var Chalkboard, NEW_LINE, argsRegex, commentRegex, commentRegexStr, configure, cwd, defaults, definitions, format, fs, languages, marked, parse, path, pkg, processFiles, program, read, returnRegex, run, wrench, write, _, _capitalize, _formatKeyValue, _getLanguages, _repeatChar, _setAttribute;
 
   program = require("commander");
 
@@ -31,13 +31,6 @@
 
   cwd = process.cwd();
 
-  for (ext in languages) {
-    lang = languages[ext];
-    regex = "^\\s*" + lang.symbol + "{1,2}" + commentRegexStr;
-    lang.commentRegex = new RegExp(regex);
-    lang.blockRegex = new RegExp(lang.block);
-  }
-
   defaults = {
     format: "markdown",
     output: null,
@@ -55,15 +48,27 @@
   };
 
   _repeatChar = function(char, count) {
+    if (count == null) {
+      count = 0;
+    }
     return Array(count + 1).join(char);
   };
 
   _getLanguages = function(source, options) {
+    var ext, lang, regex;
+
     if (options == null) {
       options = {};
     }
     ext = path.extname(source) || path.basename(source);
-    return languages[ext];
+    lang = languages[ext];
+    if (lang == null) {
+      throw new Error("Chalkboard does not support type " + ext);
+    }
+    regex = "^\\s*" + lang.symbol + "{1,2}" + commentRegexStr;
+    lang.commentRegex = new RegExp(regex);
+    lang.blockRegex = new RegExp(lang.block);
+    return lang;
   };
 
   _setAttribute = function(object, key, value, options) {
@@ -270,7 +275,7 @@
   };
 
   read = function(file, options, callback) {
-    var relative, stat;
+    var lang, relative, stat;
 
     if (options == null) {
       options = {};
@@ -325,12 +330,11 @@
     var joinfilePath, opts;
 
     opts = _.extend({}, defaults, _(options).pick(_(defaults).keys()));
-    if (program.output && program.join) {
-      console.error("Cannot use both output and join option at the same time");
-      return process.exit(1);
+    if (opts.output && opts.join) {
+      throw new Error("Cannot use both output and join option at the same time");
     }
-    if (program.join != null) {
-      joinfilePath = path.join(cwd, program.join);
+    if (opts.join != null) {
+      joinfilePath = path.join(cwd, opts.join);
       if (fs.existsSync(joinfilePath)) {
         fs.unlinkSync(joinfilePath);
       }
@@ -345,8 +349,7 @@
     opts = configure(options);
     callback = function(source, error) {
       if (error != null) {
-        console.error(error);
-        process.exit(1);
+        throw new Error(error);
       }
       return console.log("Generated documentation for " + source);
     };
@@ -387,16 +390,20 @@
     if (program.args.length) {
       return processFiles(program);
     } else {
-      return console.error(program.helpInformation());
+      return console.log(program.helpInformation());
     }
   };
 
   Chalkboard = module.exports = {
+    _capitalize: _capitalize,
+    _repeatChar: _repeatChar,
+    _getLanguages: _getLanguages,
     parse: parse,
     run: run,
     read: read,
     write: write,
-    processFiles: processFiles
+    processFiles: processFiles,
+    configure: configure
   };
 
 }).call(this);
