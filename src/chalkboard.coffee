@@ -17,10 +17,7 @@
 ## - underscore
 ##
 ## @TODO
-## - Implement @default tag
-## - Implement @deprecated tag
-## - Implement @version tag
-## - Implement configuration for different languages
+## [TODO Wiki](https://github.com/adrianlee44/chalkboard/wiki/TODO)
 ##
 
 ##
@@ -59,11 +56,6 @@ returnRegex     = /\{([\w\|]+)}\s(.*)/
 NEW_LINE        = /\n\r?/
 cwd             = process.cwd()
 
-for ext, lang of languages
-  regex = "^\\s*#{lang.symbol}{1,2}#{commentRegexStr}"
-  lang.commentRegex = new RegExp regex
-  lang.blockRegex   = new RegExp lang.block
-
 defaults =
   format: "markdown"
   output: null
@@ -73,12 +65,21 @@ _capitalize = (str = "") ->
   return str unless str
   str[0].toUpperCase() + str[1..]
 
-_repeatChar = (char, count) ->
+_repeatChar = (char, count = 0) ->
   Array(count+1).join char
 
 _getLanguages = (source, options = {}) ->
-  ext = path.extname(source) or path.basename(source)
-  return languages[ext]
+  ext  = path.extname(source) or path.basename(source)
+  lang = languages[ext]
+
+  unless lang?
+    throw new Error "Chalkboard does not support type #{ext}"
+
+  regex = "^\\s*#{lang.symbol}{1,2}#{commentRegexStr}"
+  lang.commentRegex = new RegExp regex
+  lang.blockRegex   = new RegExp lang.block
+
+  return lang
 
 #
 # @function
@@ -370,13 +371,12 @@ write = (source, content, options = {}) ->
 configure = (options) ->
   opts = _.extend {}, defaults, _(options).pick(_(defaults).keys())
 
-  if program.output and program.join
-    console.error "Cannot use both output and join option at the same time"
-    return process.exit 1
+  if opts.output and opts.join
+    throw new Error "Cannot use both output and join option at the same time"
 
   # clean the existing file if all comments are compiled to one location
-  if program.join?
-    joinfilePath = path.join cwd, program.join
+  if opts.join?
+    joinfilePath = path.join cwd, opts.join
 
     # Clear the original file by write empty string into it
     fs.unlinkSync(joinfilePath) if fs.existsSync joinfilePath
@@ -389,9 +389,7 @@ processFiles = (options)->
   opts = configure options
 
   callback = (source, error) ->
-    if error?
-      console.error error
-      process.exit 1
+    throw new Error(error) if error?
 
     console.log "Generated documentation for #{source}"
 
@@ -418,7 +416,7 @@ processFiles = (options)->
 # @name run
 # @description
 # Start the process of generating documentation with source code
-# @param {Array} List of arguments
+# @param {Array} argv List of arguments
 #
 run = (argv = {})->
   program
@@ -432,6 +430,16 @@ run = (argv = {})->
   if program.args.length
     processFiles program
   else
-    console.error program.helpInformation()
+    console.log program.helpInformation()
 
-Chalkboard = module.exports = {parse, run, read, write, processFiles}
+Chalkboard = module.exports = {
+  _capitalize,
+  _repeatChar,
+  _getLanguages,
+  parse,
+  run,
+  read,
+  write,
+  processFiles,
+  configure
+}
