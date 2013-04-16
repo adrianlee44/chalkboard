@@ -31,7 +31,7 @@ module.exports = (grunt) ->
 
       src:
         files: "src/*.coffee"
-        tasks: ["coffeelint:src", "coffee:src"]
+        tasks: ["coffeelint:src", "coffee:src", "nodeunit"]
 
       test:
         files: "<%= coffeelint.test.files.src %>"
