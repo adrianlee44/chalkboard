@@ -19,7 +19,8 @@
     },
     "returns": {
         "hasArgs": true,
-        "hasMultiple": true
+        "hasMultiple": true,
+        "multipleLines": true
     },
     "variable": {
         "typeIdentifier": true
