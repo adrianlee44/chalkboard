@@ -51,8 +51,8 @@ definitions = require "./resources/definitions.json"
 
 commentRegexStr = "\\s*(?:@(\\w+))?(?:\\s*(.*))?"
 commentRegex    = new RegExp commentRegexStr
-argsRegex       = /\{([\w\|]+)}\s([\w\d_-]+)\s(.*)/
-returnRegex     = /\{([\w\|]+)}\s(.*)/
+argsRegex       = /\{([\w\|]+)}\s([\w\d_-]+)\s?(.*)/
+returnRegex     = /\{([\w\|]+)}\s?(.*)/
 NEW_LINE        = /\n\r?/
 cwd             = process.cwd()
 
@@ -118,8 +118,10 @@ parse = (code, lang, options = {})->
 
   allSections    = []
   currentSection = {}
+  argObject      = {}
 
   for line in code.split(NEW_LINE)
+    # Check for starting and ending comment block
     if (match = line.match lang.blockRegex)
       inCommentBlock = not inCommentBlock
       continue
@@ -132,6 +134,17 @@ parse = (code, lang, options = {})->
       value      = match[2]
 
       if key?
+        if multiLineKey and not _(argObject).isEmpty()
+          do (multiLineKey, currentSection, argObject, definitions) ->
+            keys = multiLineKey.split "."
+            _setAttribute(currentSection,
+              keys[0],
+              argObject,
+              definitions[keys[0]]
+            )
+
+          argObject = {}
+
         # Reset multiple line key since this is a new section
         multiLineKey = ""
 
@@ -139,8 +152,33 @@ parse = (code, lang, options = {})->
         def = definitions[key]
         continue unless def?
 
+        hasArgs = def.hasArgs? and def.hasArgs
+
+        # Identifier section
+        # =====================
+
+        # check if the current key is an type identifier
+        if def.typeIdentifier and key?
+          if currentSection.type?
+            console.log """
+              Cannot have multiple types. [Current: #{currentSection.type}]
+            """
+          else
+            currentSection.type = key
+            continue
+
+        # check if the current key is an access identifier
+        if def.accessIdentifier and key?
+          if currentSection.access?
+            console.log """
+              Cannot have multiple access specifier.
+            """
+          else
+            currentSection.access = key
+            continue
+
         # Following section is for tags with multiple arguments
-        if def.hasArgs? and def.hasArgs
+        if hasArgs
           matchingRegex =
             switch key
               when "returns" then returnRegex
@@ -151,45 +189,34 @@ parse = (code, lang, options = {})->
           argsMatch = value.match matchingRegex
           if argsMatch?
             argObject =
-              type:        argsMatch[1] or "undefined"
-              description: argsMatch[3] or argsMatch[2]
-            argObject.name = argsMatch[2] if argsMatch[3]?
+              type: argsMatch[1] or "undefined"
+            switch key
+              when "param"
+                argObject.description = argsMatch[3] or ""
+                argObject.name        = argsMatch[2]
+              when "return"
+                argObject.description = argsMatch[2] or ""
 
-            _setAttribute currentSection, key, argObject, def
+            value = null
 
         # when multiple lines are allowed, update the multiLineKey
-        else if def.multipleLines
-          multiLineKey = key
-          if value?
-            _setAttribute currentSection, key, value, def
+        if def.multipleLines
+          multiLineKey = if hasArgs then "#{key}.description" else key
 
-        # check if the current key is an type identifier
-        else if def.typeIdentifier and key?
-          if currentSection.type?
-            console.log """
-              Cannot have multiple types. [Current: #{currentSection.type}]
-            """
-          else
-            currentSection.type = key
-
-        # check if the current key is an access identifier
-        else if def.accessIdentifier and key?
-          if currentSection.access?
-            console.log """
-              Cannot have multiple access specifier.
-            """
-          else
-            currentSection.access = key
-
-        # default action
-        else
+        if value?
           _setAttribute currentSection, key, value, def
 
       # When key doesn't exist and multi line key is set,
       # add the value to the original key
       if multiLineKey and value?
-        newValue = "#{value}  \n"
-        _setAttribute currentSection, multiLineKey, newValue, def
+        do (argObject, multiLineKey, value, currentSection, definitions) ->
+          object = if _(argObject).isEmpty() then currentSection else argObject
+          keys   = multiLineKey.split(".")
+          _setAttribute(object,
+            keys[keys.length - 1],
+            "#{value}  \n",
+            definitions[keys[keys.length - 1]]
+          )
 
     else
       if hasComment and not _(currentSection).isEmpty()

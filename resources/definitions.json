@@ -11,7 +11,8 @@
     "param": {
         "hasArgs": true,
         "hasMultiple": true,
-        "displayName": "parameters"
+        "displayName": "parameters",
+        "multipleLines": true
     },
     "function": {
         "typeIdentifier": true
