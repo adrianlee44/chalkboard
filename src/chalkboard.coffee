@@ -194,7 +194,7 @@ parse = (code, lang, options = {})->
               when "param"
                 argObject.description = argsMatch[3] or ""
                 argObject.name        = argsMatch[2]
-              when "return"
+              when "returns"
                 argObject.description = argsMatch[2] or ""
 
             value = null
@@ -220,6 +220,20 @@ parse = (code, lang, options = {})->
 
     else
       if hasComment and not _(currentSection).isEmpty()
+
+        # Check if there is remaining argObject to be cleared
+        if multiLineKey and not _(argObject).isEmpty()
+          do (multiLineKey, currentSection, argObject, definitions) ->
+            keys = multiLineKey.split "."
+            _setAttribute(currentSection,
+              keys[0],
+              argObject,
+              definitions[keys[0]]
+            )
+
+          multiLineKey = ""
+          argObject    = {}
+
         allSections.push currentSection
         currentSection = {}
 
