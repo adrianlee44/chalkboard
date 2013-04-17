@@ -251,10 +251,11 @@ _formatKeyValue = (key, value, newLine = true, headerLevel = 4) ->
       # returns and param
       if _(element).isObject()
         if element.name?
-          output += "**#{element.name}**\n"
+          output += "**#{element.name}**  \n"
         if element.type?
-          output += "Type: `#{element.type}`\n"
-        output += "#{element.description}  \n"
+          output += "Type: `#{element.type}`  \n"
+        if element.description?
+          output += "#{element.description}  \n"
       else
         output += "-   #{element}  \n"
 
