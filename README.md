@@ -39,18 +39,18 @@ Run through code and parse out all the comments
 #### Type
 function
 #### Parameters
-**code**
-Type: `String`
+**code**  
+Type: `String`  
 Source code to be parsed  
-**lang**
-Type: `Object`
+**lang**  
+Type: `Object`  
 Language settings for the file  
-**options**
-Type: `Object`
+**options**  
+Type: `Object`  
 User settings  
 
 #### Returns
-Type: `Array`
+Type: `Array`  
 List of objects with all the comment block  
 
 
@@ -62,12 +62,15 @@ Format comment sections into readable format
 #### Type
 function
 #### Parameters
-**sections**
-Type: `Array`
+**sections**  
+Type: `Array`  
 List of comment sections  
+**options**  
+Type: `Object`  
+  
 
 #### Returns
-Type: `String`
+Type: `String`  
 Formatted markdown code  
 
 
@@ -79,18 +82,18 @@ Read the content of the file
 #### Type
 function
 #### Parameters
-**file**
-Type: `String`
+**file**  
+Type: `String`  
 File path  
-**options**
-Type: `Object`
+**options**  
+Type: `Object`  
 User options  
-**callback**
-Type: `Function`
+**callback**  
+Type: `Function`  
 Read callback  
 
 #### Returns
-Type: `Boolean`
+Type: `Boolean`  
 File has been read successfully  
 
 
@@ -102,12 +105,15 @@ Write parsed content into the output file
 #### Type
 function
 #### Parameters
-**source**
-Type: `String`
+**source**  
+Type: `String`  
 File path of original file  
-**content**
-Type: `String`
+**content**  
+Type: `String`  
 Content to write to file  
+**options**  
+Type: `Object`  
+  
 
 
 run
@@ -118,8 +124,8 @@ Start the process of generating documentation with source code
 #### Type
 function
 #### Parameters
-**argv**
-Type: `Array`
+**argv**  
+Type: `Array`  
 List of arguments  
 
 ## Author
