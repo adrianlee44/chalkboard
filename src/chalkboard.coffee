@@ -23,7 +23,9 @@
 ##
 ## @name Getting Started
 ## @description
-## Install the module with: `npm install -g chalkboard`
+## The easiest way to use chalkboard will probably be to install it globally.
+##
+## To do so, install the module with: `npm install -g chalkboard`
 ##
 
 ##
@@ -256,7 +258,7 @@ parse = (code, lang, options = {})->
 # @param {Integer} headerLevel The header level of the section name
 # @returns {String} Formatted markdown string based on key and value
 #
-_formatKeyValue = (key, value, newLine = true, headerLevel = 4) ->
+_formatKeyValue = (key, value, newLine = true, headerLevel = 3) ->
   def         = definitions[key]
   displayName = if def?.displayName? then def.displayName else key
 
@@ -269,12 +271,16 @@ _formatKeyValue = (key, value, newLine = true, headerLevel = 4) ->
       if _(element).isObject()
         if element.name?
           output += "**#{element.name}**  \n"
+        if element.description? and element.description
+          output += "#{element.description}  \n"
         if element.type?
           output += "Type: `#{element.type}`  \n"
-        if element.description?
-          output += "#{element.description}  \n"
+
+      # Everything else with just string
       else
         output += "-   #{element}  \n"
+
+      output += "\n"
 
   else if _(value).isString()
     output += "#{value}"
@@ -315,7 +321,9 @@ format = (sections, options) ->
           omitList.push "url"
         else
           output += "#{section.name}"
+
         output +="\n==="
+
       output += "\n"
       omitList.push "name"
 
