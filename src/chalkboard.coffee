@@ -177,6 +177,9 @@ parse = (code, lang, options = {})->
             currentSection.access = key
             continue
 
+        # For generic identifier
+        value = true if def.identifier?
+
         # Following section is for tags with multiple arguments
         if hasArgs
           matchingRegex =
@@ -297,10 +300,15 @@ format = (sections, options) ->
 
     continue if section.access? and section.access is "private"
 
+    isDeprecated = section.deprecated?
+
     if section.name?
       output += "\n"
       if index
-        output += "#{section.name}\n---\n"
+        output += "#{section.name}"
+        output += " (Deprecated)" if isDeprecated
+        output += "\n---\n"
+
       else
         if section.url?
           output += "[#{section.name}](#{section.url})" if section.url?
