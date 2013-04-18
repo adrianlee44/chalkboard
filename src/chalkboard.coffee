@@ -323,6 +323,10 @@ format = (sections, options) ->
       output += "#{section.description}\n"
       omitList.push "description"
 
+    if section.version?
+      output += "Version: `#{section.version}`  \n\n"
+      omitList.push "version"
+
     if section.author? and not index
       footer += _formatKeyValue "author", section.author, false, 2
 
