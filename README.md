@@ -3,20 +3,21 @@
 ===
 An npm package that generate better documentation  
 
-#### Dependencies
+### Dependencies
 - commander  
 - wrench  
 - marked  
 - underscore  
 
-#### TODO
+### TODO
 [TODO Wiki](https://github.com/adrianlee44/chalkboard/wiki/TODO)  
 
 
 Getting Started
 ---
 
-Install the module with: `npm install -g chalkboard`  
+The easiest way to use chalkboard will probably be to install it globally.  
+To do so, install the module with: `npm install -g chalkboard`  
 
 
 Usage
@@ -36,22 +37,26 @@ parse
 
 Run through code and parse out all the comments  
 
-#### Type
-function
-#### Parameters
+Type: `function`  
+
+### Parameters
 **code**  
 Type: `String`  
 Source code to be parsed  
+
 **lang**  
 Type: `Object`  
 Language settings for the file  
+
 **options**  
 Type: `Object`  
 User settings  
 
-#### Returns
+
+### Returns
 Type: `Array`  
 List of objects with all the comment block  
+
 
 
 format
@@ -59,19 +64,21 @@ format
 
 Format comment sections into readable format  
 
-#### Type
-function
-#### Parameters
+Type: `function`  
+
+### Parameters
 **sections**  
 Type: `Array`  
 List of comment sections  
+
 **options**  
 Type: `Object`  
-  
 
-#### Returns
+
+### Returns
 Type: `String`  
 Formatted markdown code  
+
 
 
 read
@@ -79,22 +86,26 @@ read
 
 Read the content of the file  
 
-#### Type
-function
-#### Parameters
+Type: `function`  
+
+### Parameters
 **file**  
 Type: `String`  
 File path  
+
 **options**  
 Type: `Object`  
 User options  
+
 **callback**  
 Type: `Function`  
 Read callback  
 
-#### Returns
+
+### Returns
 Type: `Boolean`  
 File has been read successfully  
+
 
 
 write
@@ -102,18 +113,20 @@ write
 
 Write parsed content into the output file  
 
-#### Type
-function
-#### Parameters
+Type: `function`  
+
+### Parameters
 **source**  
 Type: `String`  
 File path of original file  
+
 **content**  
 Type: `String`  
 Content to write to file  
+
 **options**  
 Type: `Object`  
-  
+
 
 
 run
@@ -121,12 +134,13 @@ run
 
 Start the process of generating documentation with source code  
 
-#### Type
-function
-#### Parameters
+Type: `function`  
+
+### Parameters
 **argv**  
 Type: `Array`  
 List of arguments  
+
 
 ## Author
 Adrian Lee (adrian@radianstudio.com)
