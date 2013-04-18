@@ -271,10 +271,10 @@ _formatKeyValue = (key, value, newLine = true, headerLevel = 3) ->
       if _(element).isObject()
         if element.name?
           output += "**#{element.name}**  \n"
-        if element.description? and element.description
-          output += "#{element.description}  \n"
         if element.type?
           output += "Type: `#{element.type}`  \n"
+        if element.description? and element.description
+          output += "#{element.description}  \n"
 
       # Everything else with just string
       else
@@ -330,6 +330,10 @@ format = (sections, options) ->
     if section.description?
       output += "#{section.description}\n"
       omitList.push "description"
+
+    if section.type?
+      output += "Type: `#{section.type}`  \n\n"
+      omitList.push "type"
 
     if section.version?
       output += "Version: `#{section.version}`  \n\n"
