@@ -21,11 +21,20 @@
 ##
 
 ##
+## @name Supported Tags
+## @description
+## [Wiki Page](https://github.com/adrianlee44/chalkboard/wiki/Supported-Tags)
+##
+
+##
 ## @name Getting Started
 ## @description
 ## The easiest way to use chalkboard will probably be to install it globally.
 ##
-## To do so, install the module with: `npm install -g chalkboard`
+## To do so, install the module with:
+## ```
+## npm install -g chalkboard
+## ```
 ##
 
 ##
@@ -110,7 +119,7 @@ _setAttribute = (object, key, value, options) ->
 # Run through code and parse out all the comments
 # @param {String} code Source code to be parsed
 # @param {Object} lang Language settings for the file
-# @param {Object} options User settings
+# @param {Object} options User settings (default {})
 # @returns {Array} List of objects with all the comment block
 #
 parse = (code, lang, options = {})->
@@ -197,10 +206,12 @@ parse = (code, lang, options = {})->
               type: argsMatch[1] or "undefined"
             switch key
               when "param"
-                argObject.description = argsMatch[3] or ""
-                argObject.name        = argsMatch[2]
+                argObject.description  = argsMatch[3] or ""
+                argObject.name         = argsMatch[2]
               when "returns"
                 argObject.description = argsMatch[2] or ""
+
+            argObject.description += "  \n" if argObject.description
 
             value = null
 
@@ -217,9 +228,10 @@ parse = (code, lang, options = {})->
         do (argObject, multiLineKey, value, currentSection, definitions) ->
           object = if _(argObject).isEmpty() then currentSection else argObject
           keys   = multiLineKey.split(".")
+          value += "  \n" if value
           _setAttribute(object,
             keys[keys.length - 1],
-            "#{value}  \n",
+            value,
             definitions[keys[keys.length - 1]]
           )
 
@@ -255,7 +267,8 @@ parse = (code, lang, options = {})->
 # @param {String} key Tag name
 # @param {String} value User input for the tag
 # @param {Boolean} newLine If a new line should be appended to the end
-# @param {Integer} headerLevel The header level of the section name
+#  (default true)
+# @param {Integer} headerLevel The header level of the section name (default 3)
 # @returns {String} Formatted markdown string based on key and value
 #
 _formatKeyValue = (key, value, newLine = true, headerLevel = 3) ->
@@ -279,8 +292,6 @@ _formatKeyValue = (key, value, newLine = true, headerLevel = 3) ->
       # Everything else with just string
       else
         output += "-   #{element}  \n"
-
-      output += "\n"
 
   else if _(value).isString()
     output += "#{value}"
@@ -328,7 +339,7 @@ format = (sections, options) ->
       omitList.push "name"
 
     if section.description?
-      output += "#{section.description}\n"
+      output += "#{section.description}  \n"
       omitList.push "description"
 
     if section.type?
