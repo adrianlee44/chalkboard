@@ -19,43 +19,22 @@ exports.configureTest =
     options =
       output: "test/"
 
-    outputOptions =
-      format: "markdown"
-      output: "test/"
-      join:   null
-      files:  []
-
-    test.deepEqual chalkboard.configure(options),
-      outputOptions,
-      "Setting output"
+    test.equal chalkboard.configure(options).output,
+      "test/", "Setting output"
 
     options1 =
       output: "test/"
       format: "html"
 
-    outputOptions1 =
-      format: "html"
-      output: "test/"
-      join:   null
-      files:  []
-
-    test.deepEqual chalkboard.configure(options1),
-      outputOptions1,
-      "Setting format"
+    test.equal chalkboard.configure(options1).format,
+      "html", "Setting format"
 
     options2 =
       output: "test/"
       args:   ["src/", "test/"]
 
-    outputOptions2 =
-      format: "markdown"
-      output: "test/"
-      join:   null
-      files:  ["src/", "test/"]
-
-    test.deepEqual chalkboard.configure(options2),
-      outputOptions2,
-      "Setting args and files"
+    test.deepEqual chalkboard.configure(options2).files,
+      ["src/", "test/"], "Setting args and files"
 
     test.done()
 
