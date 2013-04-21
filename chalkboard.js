@@ -23,9 +23,9 @@
 
   commentRegex = new RegExp(commentRegexStr);
 
-  argsRegex = /\{([\w\|]+)}\s([\w\d_-]+)\s(.*)/;
+  argsRegex = /\{([\w\|\s]+)}\s([\w\d_-]+)\s?(.*)/;
 
-  returnRegex = /\{([\w\|]+)}\s(.*)/;
+  returnRegex = /\{([\w\|]+)}\s?(.*)/;
 
   NEW_LINE = /\n\r?/;
 
@@ -34,7 +34,8 @@
   defaults = {
     format: "markdown",
     output: null,
-    join: null
+    join: null,
+    header: false
   };
 
   _capitalize = function(str) {
@@ -74,6 +75,9 @@
   _setAttribute = function(object, key, value, options) {
     var _ref, _ref1;
 
+    if (options == null) {
+      options = {};
+    }
     if ((options.hasMultiple != null) && options.hasMultiple) {
       if ((_ref = object[key]) == null) {
         object[key] = [];
@@ -88,7 +92,7 @@
   };
 
   parse = function(code, lang, options) {
-    var allSections, argObject, argsMatch, currentSection, def, hasComment, inCommentBlock, key, line, match, matchingRegex, multiLineKey, newValue, value, _i, _len, _ref;
+    var allSections, argObject, argsMatch, currentSection, def, hasArgs, hasComment, inCommentBlock, key, line, match, matchingRegex, multiLineKey, object, value, _getMultiLineKey, _i, _len, _ref;
 
     if (options == null) {
       options = {};
@@ -98,6 +102,19 @@
     inCommentBlock = false;
     allSections = [];
     currentSection = {};
+    argObject = {};
+    _getMultiLineKey = function(index) {
+      var keys;
+
+      keys = multiLineKey.split(".");
+      if (index < 0) {
+        index = keys.length + index;
+      }
+      if (keys.length === 0 || index < 0 || index > keys.length) {
+        return "";
+      }
+      return keys[index];
+    };
     _ref = code.split(NEW_LINE);
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       line = _ref[_i];
@@ -106,16 +123,47 @@
         continue;
       }
       if ((inCommentBlock && (match = line.match(commentRegex))) || (match = line.match(lang.commentRegex))) {
-        hasComment = true;
         key = match[1];
         value = match[2];
+        if (key === "chalk") {
+          hasComment = true;
+          currentSection.chalk = value;
+          continue;
+        }
+        if (!hasComment) {
+          continue;
+        }
         if (key != null) {
+          if (multiLineKey && !_(argObject).isEmpty()) {
+            _setAttribute(currentSection, _getMultiLineKey(0), argObject, definitions[_getMultiLineKey(0)]);
+            argObject = {};
+          }
           multiLineKey = "";
           def = definitions[key];
           if (def == null) {
             continue;
           }
-          if ((def.hasArgs != null) && def.hasArgs) {
+          hasArgs = (def.hasArgs != null) && def.hasArgs;
+          if (def.typeIdentifier && (key != null)) {
+            if (currentSection.type != null) {
+              console.log("Cannot have multiple types. [Current: " + currentSection.type + "]");
+            } else {
+              currentSection.type = key;
+              continue;
+            }
+          }
+          if (def.accessIdentifier && (key != null)) {
+            if (currentSection.access != null) {
+              console.log("Cannot have multiple access specifier.");
+            } else {
+              currentSection.access = key;
+              continue;
+            }
+          }
+          if (def.identifier != null) {
+            value = true;
+          }
+          if (hasArgs) {
             matchingRegex = (function() {
               switch (key) {
                 case "returns":
@@ -127,46 +175,51 @@
             argsMatch = value.match(matchingRegex);
             if (argsMatch != null) {
               argObject = {
-                type: argsMatch[1] || "undefined",
-                description: argsMatch[3] || argsMatch[2]
+                type: argsMatch[1] || "undefined"
               };
-              if (argsMatch[3] != null) {
-                argObject.name = argsMatch[2];
+              switch (key) {
+                case "param":
+                  argObject.description = argsMatch[3] || "";
+                  argObject.name = argsMatch[2];
+                  break;
+                case "returns":
+                  argObject.description = argsMatch[2] || "";
               }
-              _setAttribute(currentSection, key, argObject, def);
+              if (argObject.description) {
+                argObject.description += "  \n";
+              }
+              value = null;
             }
-          } else if (def.multipleLines) {
-            multiLineKey = key;
-            if (value != null) {
-              _setAttribute(currentSection, key, value, def);
-            }
-          } else if (def.typeIdentifier && (key != null)) {
-            if (currentSection.type != null) {
-              console.log("Cannot have multiple types. [Current: " + currentSection.type + "]");
-            } else {
-              currentSection.type = key;
-            }
-          } else if (def.accessIdentifier && (key != null)) {
-            if (currentSection.access != null) {
-              console.log("Cannot have multiple access specifier.");
-            } else {
-              currentSection.access = key;
-            }
-          } else {
+          }
+          if (def.multipleLines) {
+            multiLineKey = hasArgs ? "" + key + ".description" : key;
+          }
+          if (value != null) {
             _setAttribute(currentSection, key, value, def);
           }
         }
         if (multiLineKey && (value != null)) {
-          newValue = "" + value + "  \n";
-          _setAttribute(currentSection, multiLineKey, newValue, def);
+          object = _(argObject).isEmpty() ? currentSection : argObject;
+          if (value) {
+            value += "  \n";
+          }
+          _setAttribute(object, _getMultiLineKey(-1), value, definitions[_getMultiLineKey(-1)]);
         }
       } else {
         if (hasComment && !_(currentSection).isEmpty()) {
+          if (multiLineKey && !_(argObject).isEmpty()) {
+            _setAttribute(currentSection, _getMultiLineKey(0), argObject, definitions[_getMultiLineKey(0)]);
+            multiLineKey = "";
+            argObject = {};
+          }
           allSections.push(currentSection);
           currentSection = {};
         }
         hasComment = false;
       }
+    }
+    if (!_(currentSection).isEmpty()) {
+      allSections.push(currentSection);
     }
     return allSections;
   };
@@ -178,7 +231,7 @@
       newLine = true;
     }
     if (headerLevel == null) {
-      headerLevel = 4;
+      headerLevel = 3;
     }
     def = definitions[key];
     displayName = (def != null ? def.displayName : void 0) != null ? def.displayName : key;
@@ -189,12 +242,14 @@
         element = value[_i];
         if (_(element).isObject()) {
           if (element.name != null) {
-            output += "**" + element.name + "**\n";
+            output += "**" + element.name + "**  \n";
           }
           if (element.type != null) {
-            output += "Type: `" + element.type + "`\n";
+            output += "Type: `" + element.type + "`  \n";
           }
-          output += "" + element.description + "  \n";
+          if ((element.description != null) && element.description) {
+            output += "" + element.description + "  \n";
+          }
         } else {
           output += "-   " + element + "  \n";
         }
@@ -209,20 +264,25 @@
   };
 
   format = function(sections, options) {
-    var copyrightAndLicense, footer, index, key, omitList, output, section, value, _i, _len, _ref;
+    var copyrightAndLicense, footer, index, isDeprecated, key, omitList, output, section, value, _i, _len, _ref;
 
     output = "";
     footer = "";
     for (index = _i = 0, _len = sections.length; _i < _len; index = ++_i) {
       section = sections[index];
-      omitList = [];
+      omitList = ["chalk"];
       if ((section.access != null) && section.access === "private") {
         continue;
       }
+      isDeprecated = section.deprecated != null;
       if (section.name != null) {
         output += "\n";
         if (index) {
-          output += "" + section.name + "\n---\n";
+          output += "" + section.name;
+          if (isDeprecated) {
+            output += " (Deprecated)";
+          }
+          output += "\n---\n";
         } else {
           if (section.url != null) {
             if (section.url != null) {
@@ -238,8 +298,16 @@
         omitList.push("name");
       }
       if (section.description != null) {
-        output += "" + section.description + "\n";
+        output += "" + section.description + "  \n";
         omitList.push("description");
+      }
+      if (section.type != null) {
+        output += "Type: `" + section.type + "`  \n\n";
+        omitList.push("type");
+      }
+      if (section.version != null) {
+        output += "Version: `" + section.version + "`  \n\n";
+        omitList.push("version");
       }
       if ((section.author != null) && !index) {
         footer += _formatKeyValue("author", section.author, false, 2);
@@ -386,7 +454,7 @@
     if (argv == null) {
       argv = {};
     }
-    program.version(pkg.version).usage("[options] [FILES...]").option("-o, --output [DIR]", "Documentation output file").option("-j, --join [FILE]", "Combine all documentation into one page").option("-f, --format [TYPE]", "Output format. Default to markdown").parse(argv);
+    program.version(pkg.version).usage("[options] [FILES...]").option("-o, --output [DIR]", "Documentation output file").option("-j, --join [FILE]", "Combine all documentation into one page").option("-f, --format [TYPE]", "Output format. Default to markdown").option("-h --header", "If only header comment should be parsed").parse(argv);
     if (program.args.length) {
       return processFiles(program);
     } else {
