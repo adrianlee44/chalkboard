@@ -1,4 +1,5 @@
 ##
+## @chalk overview
 ## @name Chalkboard.js
 ##
 ## @description
@@ -21,12 +22,14 @@
 ##
 
 ##
+## @chalk overview
 ## @name Supported Tags
 ## @description
 ## [Wiki Page](https://github.com/adrianlee44/chalkboard/wiki/Supported-Tags)
 ##
 
 ##
+## @chalk overview
 ## @name Getting Started
 ## @description
 ## The easiest way to use chalkboard will probably be to install it globally.
@@ -38,6 +41,7 @@
 ##
 
 ##
+## @chalk overview
 ## @name Usage
 ## @description
 ##  Usage: chalkboard [options] [FILES...]
@@ -71,6 +75,7 @@ defaults =
   format: "markdown"
   output: null
   join:   null
+  header: false
 
 _capitalize = (str = "") ->
   return str unless str
@@ -93,6 +98,7 @@ _getLanguages = (source, options = {}) ->
   return lang
 
 #
+# @chalk function
 # @function
 # @private
 # @name _setAttribute
@@ -113,6 +119,7 @@ _setAttribute = (object, key, value, options = {}) ->
     object[key] += value
 
 #
+# @chalk function
 # @function
 # @name parse
 # @description
@@ -155,9 +162,16 @@ parse = (code, lang, options = {})->
     if (inCommentBlock and match = line.match commentRegex) or
         (match = line.match lang.commentRegex)
 
-      hasComment = true
       key        = match[1]
       value      = match[2]
+
+      # Only parse section which user have specified
+      if key is "chalk"
+        hasComment           = true
+        currentSection.chalk = value
+        continue
+
+      continue unless hasComment
 
       if key?
         if multiLineKey and not _(argObject).isEmpty()
@@ -273,6 +287,7 @@ parse = (code, lang, options = {})->
   return allSections
 
 #
+# @chalk function
 # @function
 # @private
 # @name _formatKeyValue
@@ -315,6 +330,7 @@ _formatKeyValue = (key, value, newLine = true, headerLevel = 3) ->
   return output
 
 #
+# @chalk function
 # @function
 # @name format
 # @description
@@ -327,7 +343,7 @@ format = (sections, options) ->
   output = ""
   footer = ""
   for section, index in sections
-    omitList = []
+    omitList = ["chalk"]
 
     continue if section.access? and section.access is "private"
 
@@ -398,6 +414,7 @@ format = (sections, options) ->
   return output
 
 #
+# @chalk function
 # @function
 # @name read
 # @description
@@ -430,6 +447,7 @@ read = (file, options = {}, callback) ->
     callback? "Invalid file path - #{file}"
 
 #
+# @chalk function
 # @function
 # @name write
 # @description
@@ -503,6 +521,7 @@ processFiles = (options)->
       read fullPath, opts, callback
 
 #
+# @chalk function
 # @function
 # @name run
 # @description
@@ -516,6 +535,7 @@ run = (argv = {})->
     .option("-o, --output [DIR]", "Documentation output file")
     .option("-j, --join [FILE]", "Combine all documentation into one page")
     .option("-f, --format [TYPE]", "Output format. Default to markdown")
+    .option("-h --header", "If only header comment should be parsed")
     .parse argv
 
   if program.args.length
