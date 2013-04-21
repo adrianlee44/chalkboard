@@ -3,6 +3,7 @@
 ## @name Chalkboard.js
 ##
 ## @description
+## [![Build Status](https://travis-ci.org/adrianlee44/chalkboard.png?branch=master)](https://travis-ci.org/adrianlee44/chalkboard)
 ## An npm package that generate better documentation
 ##
 ## @author Adrian Lee

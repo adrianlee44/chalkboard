@@ -7,10 +7,13 @@ module.exports = (grunt) ->
 
     coffeelint:
       options:
-        indentation:         2
-        no_empty_param_list: true
-        no_tabs:             true
-        no_stand_alone_at:   true
+        indentation:     2
+        no_stand_alone_at:
+          level: "error"
+        no_empty_param_list:
+          level: "error"
+        max_line_length:
+          level: "ignore"
 
       gruntfile:
         files:

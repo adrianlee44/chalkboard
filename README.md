@@ -1,6 +1,7 @@
 
 [Chalkboard.js](https://github.com/adrianlee44/chalkboard)
 ===
+[![Build Status](https://travis-ci.org/adrianlee44/chalkboard.png?branch=master)](https://travis-ci.org/adrianlee44/chalkboard)  
 An npm package that generate better documentation  
   
 ### Dependencies
