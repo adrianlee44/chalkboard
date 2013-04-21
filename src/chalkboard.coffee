@@ -62,7 +62,7 @@ definitions = require "./resources/definitions.json"
 
 commentRegexStr = "\\s*(?:@(\\w+))?(?:\\s*(.*))?"
 commentRegex    = new RegExp commentRegexStr
-argsRegex       = /\{([\w\|]+)}\s([\w\d_-]+)\s?(.*)/
+argsRegex       = /\{([\w\|\s]+)}\s([\w\d_-]+)\s?(.*)/
 returnRegex     = /\{([\w\|]+)}\s?(.*)/
 NEW_LINE        = /\n\r?/
 cwd             = process.cwd()
@@ -101,10 +101,10 @@ _getLanguages = (source, options = {}) ->
 # @param {Object} object Section object with information
 # @param {String} key Name of the tag
 # @param {String} value Value to be set
-# @param {Object} options Tag definitions
+# @param {Object} options Tag definitions (default {})
 # @returns {Number|String} Return the length of the array or value
 #
-_setAttribute = (object, key, value, options) ->
+_setAttribute = (object, key, value, options = {}) ->
   if options.hasMultiple? and options.hasMultiple
     object[key] ?= []
     object[key].push value
@@ -131,6 +131,21 @@ parse = (code, lang, options = {})->
   currentSection = {}
   argObject      = {}
 
+  #
+  # @chalk function
+  # @function
+  # @private
+  # @name _getMultiLineKey
+  # @description
+  # multiLineKey has value a.b when used in multiple line argument
+  # description. This function get the correct key based on the index
+  #
+  _getMultiLineKey = (index) ->
+    keys  = multiLineKey.split "."
+    index = keys.length + index if index < 0
+    return "" if keys.length is 0 or index < 0 or index > keys.length
+    keys[index]
+
   for line in code.split(NEW_LINE)
     # Check for starting and ending comment block
     if (match = line.match lang.blockRegex)
@@ -146,13 +161,11 @@ parse = (code, lang, options = {})->
 
       if key?
         if multiLineKey and not _(argObject).isEmpty()
-          do (multiLineKey, currentSection, argObject, definitions) ->
-            keys = multiLineKey.split "."
-            _setAttribute(currentSection,
-              keys[0],
-              argObject,
-              definitions[keys[0]]
-            )
+          _setAttribute(currentSection,
+            _getMultiLineKey(0),
+            argObject,
+            definitions[_getMultiLineKey(0)]
+          )
 
           argObject = {}
 
@@ -225,28 +238,24 @@ parse = (code, lang, options = {})->
       # When key doesn't exist and multi line key is set,
       # add the value to the original key
       if multiLineKey and value?
-        do (argObject, multiLineKey, value, currentSection, definitions) ->
-          object = if _(argObject).isEmpty() then currentSection else argObject
-          keys   = multiLineKey.split(".")
-          value += "  \n" if value
-          _setAttribute(object,
-            keys[keys.length - 1],
-            value,
-            definitions[keys[keys.length - 1]]
-          )
+        object = if _(argObject).isEmpty() then currentSection else argObject
+        value += "  \n" if value
+        _setAttribute(object,
+          _getMultiLineKey(-1),
+          value,
+          definitions[_getMultiLineKey(-1)]
+        )
 
     else
       if hasComment and not _(currentSection).isEmpty()
 
         # Check if there is remaining argObject to be cleared
         if multiLineKey and not _(argObject).isEmpty()
-          do (multiLineKey, currentSection, argObject, definitions) ->
-            keys = multiLineKey.split "."
-            _setAttribute(currentSection,
-              keys[0],
-              argObject,
-              definitions[keys[0]]
-            )
+          _setAttribute(currentSection,
+            _getMultiLineKey(0),
+            argObject,
+            definitions[_getMultiLineKey(0)]
+          )
 
           multiLineKey = ""
           argObject    = {}
@@ -255,6 +264,11 @@ parse = (code, lang, options = {})->
         currentSection = {}
 
       hasComment = false
+
+  # Push the last section if there was no new line at the
+  # end of the file
+  if not _(currentSection).isEmpty()
+    allSections.push currentSection
 
   return allSections
 
