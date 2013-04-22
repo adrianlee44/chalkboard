@@ -147,12 +147,41 @@ parse = (code, lang, options = {})->
   # @description
   # multiLineKey has value a.b when used in multiple line argument
   # description. This function get the correct key based on the index
+  # @param {Integer} index Key index
   #
   _getMultiLineKey = (index) ->
     keys  = multiLineKey.split "."
     index = keys.length + index if index < 0
     return "" if keys.length is 0 or index < 0 or index > keys.length
     keys[index]
+
+  #
+  # @chalk function
+  # @function
+  # @private
+  # @name _updateSection
+  # @description
+  # Check if current section or argument object are empty or not,
+  # push object to the correct array if necessary
+  #
+  _updateSection = ->
+    if hasComment and not _(currentSection).isEmpty()
+
+      # Check if there is remaining argObject to be cleared
+      if multiLineKey and not _(argObject).isEmpty()
+        _setAttribute(currentSection,
+          _getMultiLineKey(0),
+          argObject,
+          definitions[_getMultiLineKey(0)]
+        )
+
+        multiLineKey = ""
+        argObject    = {}
+
+      allSections.push currentSection
+      currentSection = {}
+
+    hasComment = false
 
   for line in code.split(NEW_LINE)
     # Check for starting and ending comment block
@@ -262,28 +291,11 @@ parse = (code, lang, options = {})->
         )
 
     else
-      if hasComment and not _(currentSection).isEmpty()
-
-        # Check if there is remaining argObject to be cleared
-        if multiLineKey and not _(argObject).isEmpty()
-          _setAttribute(currentSection,
-            _getMultiLineKey(0),
-            argObject,
-            definitions[_getMultiLineKey(0)]
-          )
-
-          multiLineKey = ""
-          argObject    = {}
-
-        allSections.push currentSection
-        currentSection = {}
-
-      hasComment = false
+      _updateSection()
 
   # Push the last section if there was no new line at the
   # end of the file
-  if not _(currentSection).isEmpty()
-    allSections.push currentSection
+  _updateSection()
 
   return allSections
 
