@@ -92,7 +92,7 @@
   };
 
   parse = function(code, lang, options) {
-    var allSections, argObject, argsMatch, currentSection, def, hasArgs, hasComment, inCommentBlock, key, line, match, matchingRegex, multiLineKey, object, value, _getMultiLineKey, _i, _len, _ref;
+    var allSections, argObject, argsMatch, currentSection, def, hasArgs, hasComment, inCommentBlock, key, line, match, matchingRegex, multiLineKey, object, value, _getMultiLineKey, _i, _len, _ref, _updateSection;
 
     if (options == null) {
       options = {};
@@ -114,6 +114,18 @@
         return "";
       }
       return keys[index];
+    };
+    _updateSection = function() {
+      if (hasComment && !_(currentSection).isEmpty()) {
+        if (multiLineKey && !_(argObject).isEmpty()) {
+          _setAttribute(currentSection, _getMultiLineKey(0), argObject, definitions[_getMultiLineKey(0)]);
+          multiLineKey = "";
+          argObject = {};
+        }
+        allSections.push(currentSection);
+        currentSection = {};
+      }
+      return hasComment = false;
     };
     _ref = code.split(NEW_LINE);
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -206,21 +218,10 @@
           _setAttribute(object, _getMultiLineKey(-1), value, definitions[_getMultiLineKey(-1)]);
         }
       } else {
-        if (hasComment && !_(currentSection).isEmpty()) {
-          if (multiLineKey && !_(argObject).isEmpty()) {
-            _setAttribute(currentSection, _getMultiLineKey(0), argObject, definitions[_getMultiLineKey(0)]);
-            multiLineKey = "";
-            argObject = {};
-          }
-          allSections.push(currentSection);
-          currentSection = {};
-        }
-        hasComment = false;
+        _updateSection();
       }
     }
-    if (!_(currentSection).isEmpty()) {
-      allSections.push(currentSection);
-    }
+    _updateSection();
     return allSections;
   };
 
