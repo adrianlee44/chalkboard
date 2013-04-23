@@ -455,7 +455,11 @@ read = (file, options = {}, callback) ->
       data           = buffer.toString()
       parsedSections = parse data, lang, options
       content        = format parsedSections, options
-      write relative, content, options
+
+      # Only write to file when there is content
+      if content
+        write relative, content, options
+
       callback? relative
 
   else if stat and stat.isDirectory()
