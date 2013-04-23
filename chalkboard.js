@@ -64,7 +64,7 @@
     ext = path.extname(source) || path.basename(source);
     lang = languages[ext];
     if (lang == null) {
-      throw new Error("Chalkboard does not support type " + ext);
+      return null;
     }
     regex = "^\\s*" + lang.symbol + "{1,2}" + commentRegexStr;
     lang.commentRegex = new RegExp(regex);
@@ -353,6 +353,9 @@
     relative = path.relative(cwd, file);
     if (stat && stat.isFile()) {
       lang = _getLanguages(file, options);
+      if (lang == null) {
+        return;
+      }
       return fs.readFile(file, function(error, buffer) {
         var content, data, parsedSections;
 
@@ -362,7 +365,9 @@
         data = buffer.toString();
         parsedSections = parse(data, lang, options);
         content = format(parsedSections, options);
-        write(relative, content, options);
+        if (content) {
+          write(relative, content, options);
+        }
         return typeof callback === "function" ? callback(relative) : void 0;
       });
     } else if (stat && stat.isDirectory()) {
@@ -373,7 +378,7 @@
   };
 
   write = function(source, content, options) {
-    var dir, filePath, filename, output;
+    var base, dir, filePath, filename, output, relative;
 
     if (options == null) {
       options = {};
@@ -382,8 +387,12 @@
       output = path.join(cwd, options.join);
       return fs.appendFileSync(output, content);
     } else if (options.output != null) {
+      base = _(options.files).find(function(file) {
+        return source.indexOf(file === 0);
+      });
       filename = path.basename(source, path.extname(source));
-      filePath = path.join(path.dirname(source), filename) + ".md";
+      relative = path.relative(base, path.dirname(source));
+      filePath = path.join(relative, filename) + ".md";
       output = path.join(cwd, options.output, filePath);
       dir = path.dirname(output);
       if (!fs.existsSync(dir)) {
