@@ -486,8 +486,10 @@ write = (source, content, options = {}) ->
 
   # Check if output folder is specify
   else if options.output?
+    base     = _(options.files).find (file) -> source.indexOf file is 0
     filename = path.basename source, path.extname(source)
-    filePath = path.join(path.dirname(source), filename) + ".md"
+    relative = path.relative base, path.dirname(source)
+    filePath = path.join(relative, filename) + ".md"
     output   = path.join cwd, options.output, filePath
     dir      = path.dirname output
 
