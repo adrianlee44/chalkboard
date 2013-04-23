@@ -89,11 +89,9 @@ _getLanguages = (source, options = {}) ->
   ext  = path.extname(source) or path.basename(source)
   lang = languages[ext]
 
-  unless lang?
-    # Should fail silently instead and move onto the next file
-    #throw new Error "Chalkboard does not support type #{ext}"
-    return null
-
+  # Should fail silently when langauge is not supported
+  # and move onto the next file
+  return null unless lang?
 
   regex = "^\\s*#{lang.symbol}{1,2}#{commentRegexStr}"
   lang.commentRegex = new RegExp regex
