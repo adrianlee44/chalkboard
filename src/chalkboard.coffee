@@ -90,7 +90,10 @@ _getLanguages = (source, options = {}) ->
   lang = languages[ext]
 
   unless lang?
-    throw new Error "Chalkboard does not support type #{ext}"
+    # Should fail silently instead and move onto the next file
+    #throw new Error "Chalkboard does not support type #{ext}"
+    return null
+
 
   regex = "^\\s*#{lang.symbol}{1,2}#{commentRegexStr}"
   lang.commentRegex = new RegExp regex
@@ -443,6 +446,8 @@ read = (file, options = {}, callback) ->
 
   if stat and stat.isFile()
     lang = _getLanguages file, options
+
+    return unless lang?
 
     fs.readFile file, (error, buffer) ->
       callback error if error?

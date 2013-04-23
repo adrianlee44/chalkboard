@@ -18,8 +18,6 @@ exports.utilTest =
     test.done()
 
   "Get languages test for Coffee": (test) ->
-    languages = require "../resources/languages.json"
-
     validSettings =
       name:         'coffeescript'
       symbol:       '#'
@@ -29,4 +27,8 @@ exports.utilTest =
 
     test.deepEqual chalkboard._getLanguages("/test/test.coffee"), validSettings
 
+    test.done()
+
+  "Not supported language": (test) ->
+    test.equal chalkboard._getLanguages("/test/test.fake"), null, "Should return null"
     test.done()
