@@ -1,5 +1,5 @@
 (function() {
-  var Chalkboard, NEW_LINE, argsRegex, commentRegex, commentRegexStr, configure, cwd, defaults, definitions, format, fs, languages, marked, parse, path, pkg, processFiles, program, read, returnRegex, run, wrench, write, _, _capitalize, _formatKeyValue, _getLanguages, _repeatChar, _setAttribute;
+  var Chalkboard, NEW_LINE, argsRegex, commentRegex, commentRegexStr, configure, cwd, defaults, definitions, format, fs, languages, lnValueRegexStr, marked, parse, path, pkg, processFiles, program, read, returnRegex, run, wrench, write, _, _capitalize, _formatKeyValue, _getLanguages, _repeatChar, _setAttribute;
 
   program = require("commander");
 
@@ -21,11 +21,13 @@
 
   commentRegexStr = "\\s*(?:@(\\w+))?(?:\\s*(.*))?";
 
+  lnValueRegexStr = "\\s*(.*)";
+
   commentRegex = new RegExp(commentRegexStr);
 
-  argsRegex = /\{([\w\|\s]+)}\s([\w\d_-]+)\s?(.*)/;
+  argsRegex = /\{([\w\|\s]+)}\s*([\w\d_-]+)\s*(.*)/;
 
-  returnRegex = /\{([\w\|]+)}\s?(.*)/;
+  returnRegex = /\{([\w\|]+)}\s*(.*)/;
 
   NEW_LINE = /\n\r?/;
 
@@ -68,6 +70,7 @@
     }
     regex = "^\\s*" + lang.symbol + "{1,2}" + commentRegexStr;
     lang.commentRegex = new RegExp(regex);
+    lang.lineRegex = new RegExp("^\\s*" + lang.symbol + "{1,2}\\s*(.*)");
     lang.blockRegex = new RegExp(lang.block);
     return lang;
   };
@@ -92,7 +95,7 @@
   };
 
   parse = function(code, lang, options) {
-    var allSections, argObject, argsMatch, currentSection, def, hasArgs, hasComment, inCommentBlock, key, line, match, matchingRegex, multiLineKey, object, value, _getMultiLineKey, _i, _len, _ref, _updateSection;
+    var allSections, argObject, argsMatch, currentSection, def, hasArgs, hasComment, inCommentBlock, key, line, lnMatch, match, matchingRegex, multiLineKey, object, value, _getMultiLineKey, _i, _len, _ref, _updateSection;
 
     if (options == null) {
       options = {};
@@ -134,7 +137,7 @@
         inCommentBlock = !inCommentBlock;
         continue;
       }
-      if ((inCommentBlock && (match = line.match(commentRegex))) || (match = line.match(lang.commentRegex))) {
+      if (!multiLineKey && (inCommentBlock && (match = line.match(commentRegex))) || (match = line.match(lang.commentRegex))) {
         key = match[1];
         value = match[2];
         if (key === "chalk") {
@@ -217,6 +220,13 @@
           }
           _setAttribute(object, _getMultiLineKey(-1), value, definitions[_getMultiLineKey(-1)]);
         }
+      } else if (multiLineKey && (lnMatch = line.match(lang.lineRegex))) {
+        value = lnMatch[1];
+        object = _(argObject).isEmpty() ? currentSection : argObject;
+        if (value) {
+          value += "  \n";
+        }
+        _setAttribute(object, _getMultiLineKey(-1), value, definitions[_getMultiLineKey(-1)]);
       } else {
         _updateSection();
       }
