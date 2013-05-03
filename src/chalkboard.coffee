@@ -66,6 +66,7 @@ languages   = require "./resources/languages.json"
 definitions = require "./resources/definitions.json"
 
 commentRegexStr = "\\s*(?:@(\\w+))?(?:\\s*(.*))?"
+lnValueRegexStr = "\\s*(.*)"
 commentRegex    = new RegExp commentRegexStr
 argsRegex       = /\{([\w\|\s]+)}\s([\w\d_-]+)\s?(.*)/
 returnRegex     = /\{([\w\|]+)}\s?(.*)/
@@ -95,6 +96,7 @@ _getLanguages = (source, options = {}) ->
 
   regex = "^\\s*#{lang.symbol}{1,2}#{commentRegexStr}"
   lang.commentRegex = new RegExp regex
+  lang.lineRegex    = new RegExp "^\\s*#{lang.symbol}{1,2}\\s*(.*)"
   lang.blockRegex   = new RegExp lang.block
 
   return lang
@@ -184,17 +186,18 @@ parse = (code, lang, options = {})->
 
     hasComment = false
 
+  # Parse through each line in the file
   for line in code.split(NEW_LINE)
     # Check for starting and ending comment block
     if (match = line.match lang.blockRegex)
       inCommentBlock = not inCommentBlock
       continue
 
-    if (inCommentBlock and match = line.match commentRegex) or
-        (match = line.match lang.commentRegex)
+    if (not multiLineKey and (inCommentBlock and match = line.match commentRegex) or
+            (match = line.match lang.commentRegex))
 
-      key        = match[1]
-      value      = match[2]
+      key   = match[1]
+      value = match[2]
 
       # Only parse section which user have specified
       if key is "chalk"
@@ -290,6 +293,17 @@ parse = (code, lang, options = {})->
           value,
           definitions[_getMultiLineKey(-1)]
         )
+
+    # if the current line is part of multiple line tag
+    else if multiLineKey and (lnMatch = line.match lang.lineRegex)
+      value  = lnMatch[1]
+      object = if _(argObject).isEmpty() then currentSection else argObject
+      value += "  \n" if value
+      _setAttribute(object,
+        _getMultiLineKey(-1),
+        value,
+        definitions[_getMultiLineKey(-1)]
+      )
 
     else
       _updateSection()
