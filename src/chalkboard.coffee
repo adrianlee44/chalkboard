@@ -18,6 +18,19 @@
 ## - marked
 ## - underscore
 ##
+## @example
+## ```
+## #
+## # @chalk overview
+## # @name example
+## # @description
+## # This is an example description for an example in readme.
+## # @param {String} name Just a random name
+## # @param {Boolean} work Does this actually work?
+## # @returns {String} Just another value
+## #
+## ```
+##
 ## @TODO
 ## [TODO Wiki](https://github.com/adrianlee44/chalkboard/wiki/TODO)
 ##
@@ -513,6 +526,14 @@ write = (source, content, options = {}) ->
   else
     console.log content
 
+#
+# @chalk function
+# @function
+# @name configure
+# @description
+# Configurate user options and validate file paths
+# @param {Object} options User configurations
+#
 configure = (options) ->
   opts = _.extend {}, defaults, _(options).pick(_(defaults).keys())
 
