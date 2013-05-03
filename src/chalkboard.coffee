@@ -81,8 +81,8 @@ definitions = require "./resources/definitions.json"
 commentRegexStr = "\\s*(?:@(\\w+))?(?:\\s*(.*))?"
 lnValueRegexStr = "\\s*(.*)"
 commentRegex    = new RegExp commentRegexStr
-argsRegex       = /\{([\w\|\s]+)}\s([\w\d_-]+)\s?(.*)/
-returnRegex     = /\{([\w\|]+)}\s?(.*)/
+argsRegex       = /\{([\w\|\s]+)}\s*([\w\d_-]+)\s*(.*)/
+returnRegex     = /\{([\w\|]+)}\s*(.*)/
 NEW_LINE        = /\n\r?/
 cwd             = process.cwd()
 
@@ -121,11 +121,11 @@ _getLanguages = (source, options = {}) ->
 # @name _setAttribute
 # @description
 # Helper function for setting objects
-# @param {Object} object Section object with information
-# @param {String} key Name of the tag
-# @param {String} value Value to be set
-# @param {Object} options Tag definitions (default {})
-# @returns {Number|String} Return the length of the array or value
+# @param   {Object} object   Section object with information
+# @param   {String} key      Name of the tag
+# @param   {String} value    Value to be set
+# @param   {Object} options  Tag definitions (default {})
+# @returns {Number|String}   Return the length of the array or value
 #
 _setAttribute = (object, key, value, options = {}) ->
   if options.hasMultiple? and options.hasMultiple
@@ -141,10 +141,10 @@ _setAttribute = (object, key, value, options = {}) ->
 # @name parse
 # @description
 # Run through code and parse out all the comments
-# @param {String} code Source code to be parsed
-# @param {Object} lang Language settings for the file
-# @param {Object} options User settings (default {})
-# @returns {Array} List of objects with all the comment block
+# @param   {String} code    Source code to be parsed
+# @param   {Object} lang    Language settings for the file
+# @param   {Object} options User settings (default {})
+# @returns {Array}          List of objects with all the comment block
 #
 parse = (code, lang, options = {})->
   hasComment     = false
@@ -334,12 +334,12 @@ parse = (code, lang, options = {})->
 # @name _formatKeyValue
 # @description
 # Format value with type and description
-# @param {String} key Tag name
-# @param {String} value User input for the tag
+# @param {String}  key     Tag name
+# @param {String}  value   User input for the tag
 # @param {Boolean} newLine If a new line should be appended to the end
 #  (default true)
-# @param {Integer} headerLevel The header level of the section name (default 3)
-# @returns {String} Formatted markdown string based on key and value
+# @param {Integer}  headerLevel The header level of the section name (default 3)
+# @returns {String} Formatted   Markdown string based on key and value
 #
 _formatKeyValue = (key, value, newLine = true, headerLevel = 3) ->
   def         = definitions[key]
@@ -376,8 +376,8 @@ _formatKeyValue = (key, value, newLine = true, headerLevel = 3) ->
 # @name format
 # @description
 # Format comment sections into readable format
-# @param {Array} sections List of comment sections
-# @param {Object} options
+# @param   {Array}  sections List of comment sections
+# @param   {Object} options
 # @returns {String} Formatted markdown code
 #
 format = (sections, options) ->
@@ -460,10 +460,10 @@ format = (sections, options) ->
 # @name read
 # @description
 # Read the content of the file
-# @param {String} file File path
-# @param {Object} options User options
-# @param {Function} callback Read callback
-# @returns {Boolean} File has been read successfully
+# @param   {String} file       File path
+# @param   {Object} options    User options
+# @param   {Function} callback Read callback
+# @returns {Boolean}           File has been read successfully
 #
 read = (file, options = {}, callback) ->
   stat     = fs.existsSync(file) && fs.statSync(file)
@@ -499,7 +499,7 @@ read = (file, options = {}, callback) ->
 # @name write
 # @description
 # Write parsed content into the output file
-# @param {String} source File path of original file
+# @param {String} source  File path of original file
 # @param {String} content Content to write to file
 # @param {Object} options
 #
