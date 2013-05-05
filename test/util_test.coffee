@@ -22,7 +22,7 @@ exports.utilTest =
       name:         'coffeescript'
       symbol:       '#'
       block:        '###'
-      lineRegex: /^\s*#{1,2}\s*(.*)/
+      lineRegex:    /^\s*#{1,2}\s+(.*)/
       commentRegex: /^\s*#{1,2}\s*(?:@(\w+))?(?:\s*(.*))?/
       blockRegex:   /###/
 

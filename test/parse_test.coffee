@@ -7,6 +7,7 @@ exports.parseTest =
       symbol:       '#'
       block:        '###'
       commentRegex: /^\s*#{1,2}\s*(?:@(\w+))?(?:\s*(.*))?/
+      lineRegex:    /^\s*#{1,2}\s+(.*)/
       blockRegex:   /###/
 
     callback()
@@ -125,5 +126,23 @@ exports.parseTest =
     ret = chalkboard.parse code, @lang, {}
 
     test.equal ret[0].param.length, 2
+
+    test.done()
+
+  "comment block": (test) ->
+    code = """
+      ###
+      @chalk overview
+      @name Testing
+      @description
+      Hello World
+      ###
+    """
+    test.expect 2
+
+    ret = chalkboard.parse code, @lang, {}
+
+    test.equal ret[0].name, "Testing"
+    test.equal ret[0].description, "Hello World  \n"
 
     test.done()
