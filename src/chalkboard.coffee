@@ -81,8 +81,10 @@ definitions = require "./resources/definitions.json"
 commentRegexStr = "\\s*(?:@(\\w+))?(?:\\s*(.*))?"
 lnValueRegexStr = "\\s*(.*)"
 commentRegex    = new RegExp commentRegexStr
-argsRegex       = /\{([\w\|\s]+)}\s*([\w\d_-]+)\s*(.*)/
-returnRegex     = /\{([\w\|]+)}\s*(.*)/
+argsRegex       = /\{([\w\|\s]+)}\s+([\w\d_-]+)(?:\s+(.*))?/
+#                   Type            name       description
+returnRegex     = /\{([\w\|]+)}(?:\s+(.*))?/
+#                   Type        description
 NEW_LINE        = /\n\r?/
 cwd             = process.cwd()
 
@@ -109,31 +111,10 @@ _getLanguages = (source, options = {}) ->
 
   regex = "^\\s*#{lang.symbol}{1,2}#{commentRegexStr}"
   lang.commentRegex = new RegExp regex
-  lang.lineRegex    = new RegExp "^\\s*#{lang.symbol}{1,2}\\s*(.*)"
+  lang.lineRegex    = new RegExp "^\\s*#{lang.symbol}{1,2}\\s+(.*)"
   lang.blockRegex   = new RegExp lang.block
 
   return lang
-
-#
-# @chalk function
-# @function
-# @private
-# @name _setAttribute
-# @description
-# Helper function for setting objects
-# @param   {Object} object   Section object with information
-# @param   {String} key      Name of the tag
-# @param   {String} value    Value to be set
-# @param   {Object} options  Tag definitions (default {})
-# @returns {Number|String}   Return the length of the array or value
-#
-_setAttribute = (object, key, value, options = {}) ->
-  if options.hasMultiple? and options.hasMultiple
-    object[key] ?= []
-    object[key].push value
-  else
-    object[key] ?= ""
-    object[key] += value
 
 #
 # @chalk function
@@ -159,6 +140,27 @@ parse = (code, lang, options = {})->
   # @chalk function
   # @function
   # @private
+  # @name _setAttribute
+  # @description
+  # Helper function for setting objects
+  # @param   {Object} object   Section object with information
+  # @param   {String} key      Name of the tag
+  # @param   {String} value    Value to be set
+  # @param   {Object} options  Tag definitions (default {})
+  # @returns {Number|String}   Return the length of the array or value
+  #
+  _setAttribute = (object, key, value, options = {}) ->
+    if options.hasMultiple? and options.hasMultiple
+      object[key] ?= []
+      object[key].push value
+    else
+      object[key] ?= ""
+      object[key] += value
+
+  #
+  # @chalk function
+  # @function
+  # @private
   # @name _getMultiLineKey
   # @description
   # multiLineKey has value a.b when used in multiple line argument
@@ -170,6 +172,15 @@ parse = (code, lang, options = {})->
     index = keys.length + index if index < 0
     return "" if keys.length is 0 or index < 0 or index > keys.length
     keys[index]
+
+  _multiLineSetAttribute = (value) ->
+    object = if _(argObject).isEmpty() then currentSection else argObject
+    value += "  \n" if value
+    _setAttribute(object,
+      _getMultiLineKey(-1),
+      value,
+      definitions[_getMultiLineKey(-1)]
+    )
 
   #
   # @chalk function
@@ -201,14 +212,16 @@ parse = (code, lang, options = {})->
 
   # Parse through each line in the file
   for line in code.split(NEW_LINE)
+
     # Check for starting and ending comment block
-    if (match = line.match lang.blockRegex)
+    if line.match lang.blockRegex
       inCommentBlock = not inCommentBlock
+      _updateSection() unless inCommentBlock
       continue
 
-    if (not multiLineKey and (inCommentBlock and match = line.match commentRegex) or
-            (match = line.match lang.commentRegex))
+    toMatchRegex = if inCommentBlock then commentRegex else lang.commentRegex
 
+    if match = line.match toMatchRegex
       key   = match[1]
       value = match[2]
 
@@ -298,25 +311,11 @@ parse = (code, lang, options = {})->
 
       # When key doesn't exist and multi line key is set,
       # add the value to the original key
-      if multiLineKey and value?
-        object = if _(argObject).isEmpty() then currentSection else argObject
-        value += "  \n" if value
-        _setAttribute(object,
-          _getMultiLineKey(-1),
-          value,
-          definitions[_getMultiLineKey(-1)]
-        )
+      _multiLineSetAttribute value if multiLineKey and value?
 
     # if the current line is part of multiple line tag
-    else if multiLineKey and (lnMatch = line.match lang.lineRegex)
-      value  = lnMatch[1]
-      object = if _(argObject).isEmpty() then currentSection else argObject
-      value += "  \n" if value
-      _setAttribute(object,
-        _getMultiLineKey(-1),
-        value,
-        definitions[_getMultiLineKey(-1)]
-      )
+    else if multiLineKey and ((lnMatch = line.match lang.lineRegex) or inCommentBlock)
+      _multiLineSetAttribute(lnMatch?[1] or line)
 
     else
       _updateSection()
@@ -484,8 +483,7 @@ read = (file, options = {}, callback) ->
       # Only write to file when there is content
       if content
         write relative, content, options
-
-      callback? relative
+        callback? relative
 
   else if stat and stat.isDirectory()
     # do nothing
