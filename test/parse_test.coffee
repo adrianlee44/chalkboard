@@ -115,6 +115,23 @@ exports.parseTest =
 
     test.done()
 
+  "param multiple line description test": (test) ->
+    code = """
+      #
+      # @chalk overview
+      # @param {String} test Another test name
+      # This is the second line
+      # And then there is the third line
+      #
+    """
+    ret    = chalkboard.parse code, @lang, {}
+    param  = ret[0].param[0]
+    output = "Another test name  \nThis is the second line  \nAnd then there is the third line  \n"
+
+    test.equal param.description, output
+
+    test.done()
+
   "multiple param test": (test) ->
     code = """
       #
@@ -126,6 +143,25 @@ exports.parseTest =
     ret = chalkboard.parse code, @lang, {}
 
     test.equal ret[0].param.length, 2
+
+    test.done()
+
+  "multiple multi-line params description test": (test) ->
+    code = """
+      #
+      # @chalk overview
+      # @param {String} test Another test name
+      # Line 2 of the first param
+      # @param {Integer} random Just another random integer
+      # With just another random character
+      #
+    """
+    ret = chalkboard.parse code, @lang, {}
+    test.equal ret[0].param.length, 2
+
+    params = ret[0].param
+    test.equal params[0].description, "Another test name  \nLine 2 of the first param  \n"
+    test.equal params[1].description, "Just another random integer  \nWith just another random character  \n"
 
     test.done()
 
@@ -145,4 +181,130 @@ exports.parseTest =
     test.equal ret[0].name, "Testing"
     test.equal ret[0].description, "Hello World  \n"
 
+    test.done()
+
+  "email test": (test) ->
+    code = """
+      #
+      # @chalk overview
+      # @name Testing Module
+      # @email test@test.com
+      # @description
+      # This is just a test
+      #
+    """
+    ret = chalkboard.parse code, @lang, {}
+    test.equal ret[0].email, "test@test.com"
+    test.done()
+
+  "copyright test": (test) ->
+    code = """
+      #
+      # @chalk overview
+      # @name Testing Module
+      # @copyright Test User c 2000
+      # @description
+      # This is just a test
+      #
+    """
+    ret = chalkboard.parse code, @lang, {}
+    test.equal ret[0].copyright, "Test User c 2000"
+    test.done()
+
+  "license test": (test) ->
+    code = """
+      #
+      # @chalk overview
+      # @name Testing Module
+      # @license MIT
+      # @description
+      # This is just a test
+      #
+    """
+    ret = chalkboard.parse code, @lang, {}
+    test.equal ret[0].license, "MIT"
+    test.done()
+
+  "url test": (test) ->
+    code = """
+      #
+      # @chalk overview
+      # @name Testing Module
+      # @url http://www.example.com
+      # @description
+      # This is just a test
+      #
+    """
+    ret = chalkboard.parse code, @lang, {}
+    test.equal ret[0].url, "http://www.example.com"
+    test.done()
+
+  "variable type identifier test": (test) ->
+    code = """
+      #
+      # @chalk overview
+      # @name Testing Module
+      # @variable
+      # @description
+      # This is just a test
+      #
+    """
+    ret = chalkboard.parse code, @lang, {}
+    test.equal ret[0].type, "variable"
+    test.done()
+
+  "function type identifier test": (test) ->
+    code = """
+      #
+      # @chalk overview
+      # @name Testing Module
+      # @function
+      # @description
+      # This is just a test
+      #
+    """
+    ret = chalkboard.parse code, @lang, {}
+    test.equal ret[0].type, "function"
+    test.done()
+
+  "private access identifier test": (test) ->
+    code = """
+      #
+      # @chalk overview
+      # @name Testing Module
+      # @private
+      # @description
+      # This is just a test
+      #
+    """
+    ret = chalkboard.parse code, @lang, {}
+    test.equal ret[0].access, "private"
+    test.done()
+
+  "public access identifier test": (test) ->
+    code = """
+      #
+      # @chalk overview
+      # @name Testing Module
+      # @public
+      # @description
+      # This is just a test
+      #
+    """
+    ret = chalkboard.parse code, @lang, {}
+    test.equal ret[0].access, "public"
+    test.done()
+
+  "version test": (test) ->
+    code = """
+      #
+      # @chalk overview
+      # @name Testing Module
+      # @version 9000+
+      # @description
+      # This is just a test
+      #
+    """
+    ret = chalkboard.parse code, @lang, {}
+    test.equal ret[0].version, "9000+"
     test.done()
