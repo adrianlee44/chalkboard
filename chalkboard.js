@@ -1,5 +1,5 @@
 (function() {
-  var Chalkboard, NEW_LINE, argsRegex, commentRegex, commentRegexStr, configure, cwd, defaults, definitions, format, fs, languages, lnValueRegexStr, marked, parse, path, pkg, processFiles, program, read, returnRegex, run, wrench, write, _, _capitalize, _formatKeyValue, _getLanguages, _repeatChar, _setAttribute;
+  var Chalkboard, NEW_LINE, argsRegex, commentRegex, commentRegexStr, configure, cwd, defaults, definitions, format, fs, languages, lnValueRegexStr, marked, parse, path, pkg, processFiles, program, read, returnRegex, run, wrench, write, _, _capitalize, _formatKeyValue, _getLanguages, _repeatChar;
 
   program = require("commander");
 
@@ -25,9 +25,9 @@
 
   commentRegex = new RegExp(commentRegexStr);
 
-  argsRegex = /\{([\w\|\s]+)}\s*([\w\d_-]+)\s*(.*)/;
+  argsRegex = /\{([\w\|\s]+)}\s+([\w\d_-]+)(?:\s+(.*))?/;
 
-  returnRegex = /\{([\w\|]+)}\s*(.*)/;
+  returnRegex = /\{([\w\|]+)}(?:\s+(.*))?/;
 
   NEW_LINE = /\n\r?/;
 
@@ -70,32 +70,13 @@
     }
     regex = "^\\s*" + lang.symbol + "{1,2}" + commentRegexStr;
     lang.commentRegex = new RegExp(regex);
-    lang.lineRegex = new RegExp("^\\s*" + lang.symbol + "{1,2}\\s*(.*)");
+    lang.lineRegex = new RegExp("^\\s*" + lang.symbol + "{1,2}\\s+(.*)");
     lang.blockRegex = new RegExp(lang.block);
     return lang;
   };
 
-  _setAttribute = function(object, key, value, options) {
-    var _ref, _ref1;
-
-    if (options == null) {
-      options = {};
-    }
-    if ((options.hasMultiple != null) && options.hasMultiple) {
-      if ((_ref = object[key]) == null) {
-        object[key] = [];
-      }
-      return object[key].push(value);
-    } else {
-      if ((_ref1 = object[key]) == null) {
-        object[key] = "";
-      }
-      return object[key] += value;
-    }
-  };
-
   parse = function(code, lang, options) {
-    var allSections, argObject, argsMatch, currentSection, def, hasArgs, hasComment, inCommentBlock, key, line, lnMatch, match, matchingRegex, multiLineKey, object, value, _getMultiLineKey, _i, _len, _ref, _updateSection;
+    var allSections, argObject, argsMatch, currentSection, def, hasArgs, hasComment, inCommentBlock, key, line, lnMatch, match, matchingRegex, multiLineKey, toMatchRegex, value, _getMultiLineKey, _i, _len, _multiLineSetAttribute, _ref, _setArgObject, _setAttribute, _updateSection;
 
     if (options == null) {
       options = {};
@@ -106,6 +87,24 @@
     allSections = [];
     currentSection = {};
     argObject = {};
+    _setAttribute = function(object, key, value, options) {
+      var _ref, _ref1;
+
+      if (options == null) {
+        options = {};
+      }
+      if ((options.hasMultiple != null) && options.hasMultiple) {
+        if ((_ref = object[key]) == null) {
+          object[key] = [];
+        }
+        return object[key].push(value);
+      } else {
+        if ((_ref1 = object[key]) == null) {
+          object[key] = "";
+        }
+        return object[key] += value;
+      }
+    };
     _getMultiLineKey = function(index) {
       var keys;
 
@@ -118,13 +117,25 @@
       }
       return keys[index];
     };
+    _multiLineSetAttribute = function(value) {
+      var object;
+
+      object = _(argObject).isEmpty() ? currentSection : argObject;
+      if (value) {
+        value += "  \n";
+      }
+      return _setAttribute(object, _getMultiLineKey(-1), value, definitions[_getMultiLineKey(-1)]);
+    };
+    _setArgObject = function() {
+      if (multiLineKey && !_(argObject).isEmpty()) {
+        _setAttribute(currentSection, _getMultiLineKey(0), argObject, definitions[_getMultiLineKey(0)]);
+      }
+      argObject = {};
+      return multiLineKey = "";
+    };
     _updateSection = function() {
       if (hasComment && !_(currentSection).isEmpty()) {
-        if (multiLineKey && !_(argObject).isEmpty()) {
-          _setAttribute(currentSection, _getMultiLineKey(0), argObject, definitions[_getMultiLineKey(0)]);
-          multiLineKey = "";
-          argObject = {};
-        }
+        _setArgObject();
         allSections.push(currentSection);
         currentSection = {};
       }
@@ -133,11 +144,15 @@
     _ref = code.split(NEW_LINE);
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       line = _ref[_i];
-      if ((match = line.match(lang.blockRegex))) {
+      if (line.match(lang.blockRegex)) {
         inCommentBlock = !inCommentBlock;
+        if (!inCommentBlock) {
+          _updateSection();
+        }
         continue;
       }
-      if (!multiLineKey && (inCommentBlock && (match = line.match(commentRegex))) || (match = line.match(lang.commentRegex))) {
+      toMatchRegex = inCommentBlock ? commentRegex : lang.commentRegex;
+      if (match = line.match(toMatchRegex)) {
         key = match[1];
         value = match[2];
         if (key === "chalk") {
@@ -149,11 +164,7 @@
           continue;
         }
         if (key != null) {
-          if (multiLineKey && !_(argObject).isEmpty()) {
-            _setAttribute(currentSection, _getMultiLineKey(0), argObject, definitions[_getMultiLineKey(0)]);
-            argObject = {};
-          }
-          multiLineKey = "";
+          _setArgObject();
           def = definitions[key];
           if (def == null) {
             continue;
@@ -214,19 +225,10 @@
           }
         }
         if (multiLineKey && (value != null)) {
-          object = _(argObject).isEmpty() ? currentSection : argObject;
-          if (value) {
-            value += "  \n";
-          }
-          _setAttribute(object, _getMultiLineKey(-1), value, definitions[_getMultiLineKey(-1)]);
+          _multiLineSetAttribute(value);
         }
-      } else if (multiLineKey && (lnMatch = line.match(lang.lineRegex))) {
-        value = lnMatch[1];
-        object = _(argObject).isEmpty() ? currentSection : argObject;
-        if (value) {
-          value += "  \n";
-        }
-        _setAttribute(object, _getMultiLineKey(-1), value, definitions[_getMultiLineKey(-1)]);
+      } else if (multiLineKey && ((lnMatch = line.match(lang.lineRegex)) || inCommentBlock)) {
+        _multiLineSetAttribute((lnMatch != null ? lnMatch[1] : void 0) || line);
       } else {
         _updateSection();
       }
@@ -377,8 +379,8 @@
         content = format(parsedSections, options);
         if (content) {
           write(relative, content, options);
+          return typeof callback === "function" ? callback(relative) : void 0;
         }
-        return typeof callback === "function" ? callback(relative) : void 0;
       });
     } else if (stat && stat.isDirectory()) {
 
