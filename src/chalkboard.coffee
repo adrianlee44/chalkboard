@@ -182,6 +182,17 @@ parse = (code, lang, options = {})->
       definitions[_getMultiLineKey(-1)]
     )
 
+  _setArgObject = ->
+    if multiLineKey and not _(argObject).isEmpty()
+      _setAttribute(currentSection,
+        _getMultiLineKey(0),
+        argObject,
+        definitions[_getMultiLineKey(0)]
+      )
+
+    argObject    = {}
+    multiLineKey = ""
+
   #
   # @chalk function
   # @function
@@ -195,15 +206,7 @@ parse = (code, lang, options = {})->
     if hasComment and not _(currentSection).isEmpty()
 
       # Check if there is remaining argObject to be cleared
-      if multiLineKey and not _(argObject).isEmpty()
-        _setAttribute(currentSection,
-          _getMultiLineKey(0),
-          argObject,
-          definitions[_getMultiLineKey(0)]
-        )
-
-        multiLineKey = ""
-        argObject    = {}
+      _setArgObject()
 
       allSections.push currentSection
       currentSection = {}
@@ -234,17 +237,7 @@ parse = (code, lang, options = {})->
       continue unless hasComment
 
       if key?
-        if multiLineKey and not _(argObject).isEmpty()
-          _setAttribute(currentSection,
-            _getMultiLineKey(0),
-            argObject,
-            definitions[_getMultiLineKey(0)]
-          )
-
-          argObject = {}
-
-        # Reset multiple line key since this is a new section
-        multiLineKey = ""
+        _setArgObject()
 
         # Get the definition for the key
         def = definitions[key]
