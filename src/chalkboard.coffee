@@ -94,10 +94,27 @@ defaults =
   join:   null
   header: false
 
+#
+# @function
+# @name _captialize
+# @description
+# Capitalize the first letter of a string
+# @param {String} str String to be capitalized
+# @returns {String} Capitalized string
+#
 _capitalize = (str = "") ->
   return str unless str
   str[0].toUpperCase() + str[1..]
 
+#
+# @function
+# @nam _repeatChar
+# @description
+# Repeat a character multiple times
+# @param {Sting} char Character to repeat
+# @param {Integer} count Number of times to repeat the character
+# @returns {String} Processed string
+#
 _repeatChar = (char, count = 0) ->
   Array(count+1).join char
 
