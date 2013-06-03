@@ -1,5 +1,5 @@
 (function() {
-  var Chalkboard, NEW_LINE, argsRegex, commentRegex, commentRegexStr, compile, configure, cwd, defaults, definitions, format, fs, languages, lnValueRegexStr, marked, parse, path, pkg, processFiles, program, read, returnRegex, run, wrench, write, _, _capitalize, _formatKeyValue, _getLanguages, _repeatChar;
+  var NEW_LINE, argsRegex, chalkboard, commentRegex, commentRegexStr, compile, configure, cwd, defaults, definitions, format, fs, languages, lnValueRegexStr, marked, parse, path, pkg, processFiles, program, read, returnRegex, run, wrench, write, _, _capitalize, _formatKeyValue, _getLanguages, _repeatChar;
 
   program = require("commander");
 
@@ -501,7 +501,7 @@
     }
   };
 
-  Chalkboard = module.exports = {
+  chalkboard = module.exports = {
     _capitalize: _capitalize,
     _repeatChar: _repeatChar,
     _getLanguages: _getLanguages,
