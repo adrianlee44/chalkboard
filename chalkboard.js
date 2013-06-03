@@ -1,5 +1,5 @@
 (function() {
-  var Chalkboard, NEW_LINE, argsRegex, commentRegex, commentRegexStr, configure, cwd, defaults, definitions, format, fs, languages, lnValueRegexStr, marked, parse, path, pkg, processFiles, program, read, returnRegex, run, wrench, write, _, _capitalize, _formatKeyValue, _getLanguages, _repeatChar;
+  var Chalkboard, NEW_LINE, argsRegex, commentRegex, commentRegexStr, compile, configure, cwd, defaults, definitions, format, fs, languages, lnValueRegexStr, marked, parse, path, pkg, processFiles, program, read, returnRegex, run, wrench, write, _, _capitalize, _formatKeyValue, _getLanguages, _repeatChar;
 
   program = require("commander");
 
@@ -355,6 +355,23 @@
     return output;
   };
 
+  compile = function(code, options, filepath) {
+    var lang, parsed;
+
+    if (options == null) {
+      options = {};
+    }
+    if (filepath == null) {
+      return;
+    }
+    lang = _getLanguages(filepath, options);
+    if (lang == null) {
+      return null;
+    }
+    parsed = parse(code, lang, options);
+    return format(parsed, options);
+  };
+
   read = function(file, options, callback) {
     var lang, relative, stat;
 
@@ -490,6 +507,7 @@
     _getLanguages: _getLanguages,
     parse: parse,
     run: run,
+    compile: compile,
     read: read,
     write: write,
     processFiles: processFiles,
