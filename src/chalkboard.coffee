@@ -468,6 +468,27 @@ format = (sections, options) ->
 # @function
 # @name read
 # @description
+# Parse code into documentation
+# @param   {String} code     Source code
+# @param   {Object} options  User options
+# @param   {String} filepath Path of the original file
+# @returns {String}          Formatted documentation
+#
+compile = (code, options = {}, filepath) ->
+  return unless filepath?
+
+  lang = _getLanguages filepath, options
+
+  return null unless lang?
+
+  parsed = parse code, lang, options
+  return format parsed, options
+
+#
+# @chalk function
+# @function
+# @name read
+# @description
 # Read the content of the file
 # @param   {String} file       File path
 # @param   {Object} options    User options
@@ -614,6 +635,7 @@ Chalkboard = module.exports = {
   _getLanguages,
   parse,
   run,
+  compile,
   read,
   write,
   processFiles,
