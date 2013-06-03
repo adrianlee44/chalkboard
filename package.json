@@ -22,6 +22,7 @@
     }
   ],
   "bin": "bin/chalkboard",
+  "main": "./chalkboard.js",
   "engines": {
     "node": ">= 0.8.0"
   },

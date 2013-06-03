@@ -629,7 +629,7 @@ run = (argv = {})->
   else
     console.log program.helpInformation()
 
-Chalkboard = module.exports = {
+chalkboard = module.exports = {
   _capitalize,
   _repeatChar,
   _getLanguages,
