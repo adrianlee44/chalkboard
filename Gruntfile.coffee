@@ -34,7 +34,7 @@ module.exports = (grunt) ->
 
       src:
         files: "src/*.coffee"
-        tasks: ["coffeelint:src", "coffee:src", "nodeunit"]
+        tasks: ["coffeelint:src", "coffee:src", "nodeunit", "chalkboard"]
 
       test:
         files: "<%= coffeelint.test.files.src %>"
@@ -47,11 +47,12 @@ module.exports = (grunt) ->
         files:
           "chalkboard.js": ["src/*.coffee"]
 
-  # These plugins provide necessary tasks.
-  grunt.loadNpmTasks "grunt-contrib-nodeunit"
-  grunt.loadNpmTasks "grunt-contrib-watch"
-  grunt.loadNpmTasks "grunt-contrib-coffee"
-  grunt.loadNpmTasks "grunt-coffeelint"
+    chalkboard:
+      src:
+        files:
+          "README.md": ["src/*.coffee"]
+
+  require('matchdep').filterDev('grunt-*').forEach grunt.loadNpmTasks
 
   # Default task.
   grunt.registerTask "default", ["coffee", "coffeelint", "nodeunit"]
