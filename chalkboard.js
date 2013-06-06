@@ -37,7 +37,8 @@
     format: "markdown",
     output: null,
     join: null,
-    header: false
+    header: false,
+    "private": false
   };
 
   _capitalize = function(str) {
@@ -284,7 +285,10 @@
     for (index = _i = 0, _len = sections.length; _i < _len; index = ++_i) {
       section = sections[index];
       omitList = ["chalk"];
-      if ((section.access != null) && section.access === "private") {
+      if (options.header && index > 1) {
+        break;
+      }
+      if ((section.access != null) && (section.access === "private" && !options["private"])) {
         continue;
       }
       isDeprecated = section.deprecated != null;
@@ -412,6 +416,9 @@
     if (options == null) {
       options = {};
     }
+    if (options.format === "html") {
+      content = marked(content);
+    }
     if (options.join != null) {
       output = path.join(cwd, options.join);
       return fs.appendFileSync(output, content);
@@ -493,7 +500,7 @@
     if (argv == null) {
       argv = {};
     }
-    program.version(pkg.version).usage("[options] [FILES...]").option("-o, --output [DIR]", "Documentation output file").option("-j, --join [FILE]", "Combine all documentation into one page").option("-f, --format [TYPE]", "Output format. Default to markdown").option("-h --header", "If only header comment should be parsed").parse(argv);
+    program.version(pkg.version).usage("[options] [FILES...]").option("-o, --output [DIR]", "Documentation output file").option("-j, --join [FILE]", "Combine all documentation into one page").option("-f, --format [TYPE]", "Output format. Default to markdown (markdown | html)").option("-p, --private", "Parse comments for private functions and variables").option("-h, --header", "Only parse the first comment block").parse(argv);
     if (program.args.length) {
       return processFiles(program);
     } else {
@@ -508,6 +515,7 @@
     parse: parse,
     run: run,
     compile: compile,
+    format: format,
     read: read,
     write: write,
     processFiles: processFiles,
