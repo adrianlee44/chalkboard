@@ -89,10 +89,11 @@ NEW_LINE        = /\n\r?/
 cwd             = process.cwd()
 
 defaults =
-  format: "markdown"
-  output: null
-  join:   null
-  header: false
+  format:  "markdown"
+  output:  null
+  join:    null
+  header:  false
+  private: false
 
 #
 # @function
@@ -395,7 +396,11 @@ format = (sections, options) ->
   for section, index in sections
     omitList = ["chalk"]
 
-    continue if section.access? and section.access is "private"
+    # Skip through the rest of the sections
+    break if options.header and index > 1
+
+    # Skip through formatting private functions/variables
+    continue if section.access? and (section.access is "private" and not options.private)
 
     isDeprecated = section.deprecated?
 
@@ -466,7 +471,7 @@ format = (sections, options) ->
 #
 # @chalk function
 # @function
-# @name read
+# @name compile
 # @description
 # Parse code into documentation
 # @param   {String} code     Source code
@@ -533,6 +538,9 @@ read = (file, options = {}, callback) ->
 # @param {Object} options
 #
 write = (source, content, options = {}) ->
+  if options.format is "html"
+    content = marked content
+
   # Check if all the generated documentations are written to one file
   if options.join?
     output = path.join cwd, options.join
@@ -620,8 +628,9 @@ run = (argv = {})->
     .usage("[options] [FILES...]")
     .option("-o, --output [DIR]", "Documentation output file")
     .option("-j, --join [FILE]", "Combine all documentation into one page")
-    .option("-f, --format [TYPE]", "Output format. Default to markdown")
-    .option("-h --header", "If only header comment should be parsed")
+    .option("-f, --format [TYPE]", "Output format. Default to markdown (markdown | html)")
+    .option("-p, --private", "Parse comments for private functions and variables")
+    .option("-h, --header", "Only parse the first comment block")
     .parse argv
 
   if program.args.length
@@ -636,6 +645,7 @@ chalkboard = module.exports = {
   parse,
   run,
   compile,
+  format,
   read,
   write,
   processFiles,
