@@ -55,4 +55,4 @@ module.exports = (grunt) ->
   require('matchdep').filterDev('grunt-*').forEach grunt.loadNpmTasks
 
   # Default task.
-  grunt.registerTask "default", ["coffee", "coffeelint", "nodeunit"]
+  grunt.registerTask "default", ["coffee", "coffeelint", "nodeunit", "chalkboard"]
