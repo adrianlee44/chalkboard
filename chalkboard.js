@@ -360,7 +360,7 @@
   };
 
   compile = function(code, options, filepath) {
-    var lang, parsed;
+    var formatted, lang, parsed;
 
     if (options == null) {
       options = {};
@@ -373,7 +373,11 @@
       return null;
     }
     parsed = parse(code, lang, options);
-    return format(parsed, options);
+    formatted = format(parsed, options);
+    if (options.format === "html") {
+      formatted = marked(formatted);
+    }
+    return formatted;
   };
 
   read = function(file, options, callback) {
