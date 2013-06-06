@@ -486,8 +486,11 @@ compile = (code, options = {}, filepath) ->
 
   return null unless lang?
 
-  parsed = parse code, lang, options
-  return format parsed, options
+  parsed    = parse code, lang, options
+  formatted = format parsed, options
+
+  formatted = marked formatted if options.format is "html"
+  return formatted
 
 #
 # @chalk function
