@@ -103,6 +103,33 @@ Formatted markdown code
   
 
 
+compile
+---
+
+Parse code into documentation  
+  
+Type: `function`  
+
+### Parameters
+**code**  
+Type: `String`  
+Source code  
+  
+**options**  
+Type: `Object`  
+User options  
+  
+**filepath**  
+Type: `String`  
+Path of the original file  
+  
+
+### Returns
+Type: `String`  
+Formatted documentation  
+  
+
+
 read
 ---
 
