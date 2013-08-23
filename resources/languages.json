@@ -1,4 +1,5 @@
 {
   ".coffee":  {"name": "coffeescript", "symbol": "#", "block": "###"},
-  "Cakefile": {"name": "coffeescript", "symbol": "#", "block": "###"}
+  "Cakefile": {"name": "coffeescript", "symbol": "#", "block": "###"},
+  ".js":      {"name": "javascript", "symbol": "//", "start": "/*", "end": "*/"}
 }
