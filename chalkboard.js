@@ -1,17 +1,14 @@
 (function() {
-  var NEW_LINE, argsRegex, chalkboard, commentRegex, commentRegexStr, compile, configure, cwd, defaults, definitions, format, fs, languages, lnValueRegexStr, marked, parse, path, pkg, processFiles, program, read, returnRegex, run, wrench, write, _, _capitalize, _formatKeyValue, _getLanguages, _repeatChar;
+  var NEW_LINE, argsRegex, chalkboard, commentRegex, commentRegexStr, compile, configure, cwd, defaults, definitions, format, languages, lib, lnValueRegexStr, parse, pkg, processFiles, read, returnRegex, run, write, _capitalize, _formatKeyValue, _getLanguages, _repeatChar;
 
-  program = require("commander");
-
-  fs = require("fs");
-
-  path = require("path");
-
-  wrench = require("wrench");
-
-  _ = require("underscore");
-
-  marked = require("marked");
+  lib = {
+    program: require("commander"),
+    fs: require("fs"),
+    path: require("path"),
+    wrench: require("wrench"),
+    _: require("underscore"),
+    marked: require("marked")
+  };
 
   pkg = require("./package.json");
 
@@ -64,20 +61,26 @@
     if (options == null) {
       options = {};
     }
-    ext = path.extname(source) || path.basename(source);
+    ext = lib.path.extname(source) || lib.path.basename(source);
     lang = languages[ext];
     if (lang == null) {
       return null;
     }
-    regex = "^\\s*" + lang.symbol + "{1,2}" + commentRegexStr;
+    regex = "^\\s*(?:" + lang.symbol + "){1,2}" + commentRegexStr;
     lang.commentRegex = new RegExp(regex);
-    lang.lineRegex = new RegExp("^\\s*" + lang.symbol + "{1,2}\\s+(.*)");
+    lang.lineRegex = new RegExp("^\\s*(?:" + lang.symbol + "){1,2}\\s+(.*)");
     lang.blockRegex = new RegExp(lang.block);
+    if (lang.start != null) {
+      lang.startRegex = new RegExp(lang.start);
+    }
+    if (lang.end != null) {
+      lang.endRegex = new RegExp(lang.end);
+    }
     return lang;
   };
 
   parse = function(code, lang, options) {
-    var allSections, argObject, argsMatch, currentSection, def, hasArgs, hasComment, inCommentBlock, key, line, lnMatch, match, matchingRegex, multiLineKey, toMatchRegex, value, _getMultiLineKey, _i, _len, _multiLineSetAttribute, _ref, _setArgObject, _setAttribute, _updateSection;
+    var allSections, argObject, argsMatch, blockRegex, currentSection, def, hasArgs, hasComment, inCommentBlock, key, line, lnMatch, match, matchingRegex, multiLineKey, toMatchRegex, value, _getMultiLineKey, _i, _len, _multiLineSetAttribute, _ref, _setArgObject, _setAttribute, _updateSection;
 
     if (options == null) {
       options = {};
@@ -121,21 +124,21 @@
     _multiLineSetAttribute = function(value) {
       var object;
 
-      object = _(argObject).isEmpty() ? currentSection : argObject;
+      object = lib._(argObject).isEmpty() ? currentSection : argObject;
       if (value) {
         value += "  \n";
       }
       return _setAttribute(object, _getMultiLineKey(-1), value, definitions[_getMultiLineKey(-1)]);
     };
     _setArgObject = function() {
-      if (multiLineKey && !_(argObject).isEmpty()) {
+      if (multiLineKey && !lib._(argObject).isEmpty()) {
         _setAttribute(currentSection, _getMultiLineKey(0), argObject, definitions[_getMultiLineKey(0)]);
       }
       argObject = {};
       return multiLineKey = "";
     };
     _updateSection = function() {
-      if (hasComment && !_(currentSection).isEmpty()) {
+      if (hasComment && !lib._(currentSection).isEmpty()) {
         _setArgObject();
         allSections.push(currentSection);
         currentSection = {};
@@ -145,7 +148,8 @@
     _ref = code.split(NEW_LINE);
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       line = _ref[_i];
-      if (line.match(lang.blockRegex)) {
+      blockRegex = inCommentBlock ? lang.endRegex : lang.startRegex;
+      if (line.match(blockRegex || lang.blockRegex)) {
         inCommentBlock = !inCommentBlock;
         if (!inCommentBlock) {
           _updateSection();
@@ -251,10 +255,10 @@
     displayName = (def != null ? def.displayName : void 0) != null ? def.displayName : key;
     output = _repeatChar("#", headerLevel);
     output += " " + (_capitalize(displayName)) + "\n";
-    if (_(value).isArray()) {
+    if (lib._(value).isArray()) {
       for (_i = 0, _len = value.length; _i < _len; _i++) {
         element = value[_i];
-        if (_(element).isObject()) {
+        if (lib._(element).isObject()) {
           if (element.name != null) {
             output += "**" + element.name + "**  \n";
           }
@@ -268,7 +272,7 @@
           output += "-   " + element + "  \n";
         }
       }
-    } else if (_(value).isString()) {
+    } else if (lib._(value).isString()) {
       output += "" + value;
     }
     if (newLine) {
@@ -349,7 +353,7 @@
         footer += _formatKeyValue(copyrightAndLicense.header.join(" and "), copyrightAndLicense.content.join("\n\n"), true, 2);
       }
       omitList.push("copyright", "license", "author", "email");
-      _ref = _(section).omit(omitList);
+      _ref = lib._(section).omit(omitList);
       for (key in _ref) {
         value = _ref[key];
         output += _formatKeyValue(key, value);
@@ -375,7 +379,7 @@
     parsed = parse(code, lang, options);
     formatted = format(parsed, options);
     if (options.format === "html") {
-      formatted = marked(formatted);
+      formatted = lib.marked(formatted);
     }
     return formatted;
   };
@@ -386,14 +390,14 @@
     if (options == null) {
       options = {};
     }
-    stat = fs.existsSync(file) && fs.statSync(file);
-    relative = path.relative(cwd, file);
+    stat = lib.fs.existsSync(file) && lib.fs.statSync(file);
+    relative = lib.path.relative(cwd, file);
     if (stat && stat.isFile()) {
       lang = _getLanguages(file, options);
       if (lang == null) {
         return;
       }
-      return fs.readFile(file, function(error, buffer) {
+      return lib.fs.readFile(file, function(error, buffer) {
         var content, data, parsedSections;
 
         if (error != null) {
@@ -421,24 +425,24 @@
       options = {};
     }
     if (options.format === "html") {
-      content = marked(content);
+      content = lib.marked(content);
     }
     if (options.join != null) {
-      output = path.join(cwd, options.join);
-      return fs.appendFileSync(output, content);
+      output = lib.path.join(cwd, options.join);
+      return lib.fs.appendFileSync(output, content);
     } else if (options.output != null) {
-      base = _(options.files).find(function(file) {
+      base = lib._(options.files).find(function(file) {
         return source.indexOf(file === 0);
       });
-      filename = path.basename(source, path.extname(source));
-      relative = path.relative(base, path.dirname(source));
-      filePath = path.join(relative, filename) + ".md";
-      output = path.join(cwd, options.output, filePath);
-      dir = path.dirname(output);
-      if (!fs.existsSync(dir)) {
-        wrench.mkdirSyncRecursive(dir, 0x1ff);
+      filename = lib.path.basename(source, lib.path.extname(source));
+      relative = lib.path.relative(base, lib.path.dirname(source));
+      filePath = lib.path.join(relative, filename) + ".md";
+      output = lib.path.join(cwd, options.output, filePath);
+      dir = lib.path.dirname(output);
+      if (!lib.fs.existsSync(dir)) {
+        lib.wrench.mkdirSyncRecursive(dir, 0x1ff);
       }
-      return fs.writeFileSync(output, content);
+      return lib.fs.writeFileSync(output, content);
     } else {
       return console.log(content);
     }
@@ -447,14 +451,14 @@
   configure = function(options) {
     var joinfilePath, opts;
 
-    opts = _.extend({}, defaults, _(options).pick(_(defaults).keys()));
+    opts = lib._.extend({}, defaults, lib._(options).pick(lib._(defaults).keys()));
     if (opts.output && opts.join) {
       throw new Error("Cannot use both output and join option at the same time");
     }
     if (opts.join != null) {
-      joinfilePath = path.join(cwd, opts.join);
-      if (fs.existsSync(joinfilePath)) {
-        fs.unlinkSync(joinfilePath);
+      joinfilePath = lib.path.join(cwd, opts.join);
+      if (lib.fs.existsSync(joinfilePath)) {
+        lib.fs.unlinkSync(joinfilePath);
       }
     }
     opts.files = options.args || [];
@@ -475,23 +479,23 @@
     _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       userFile = _ref[_i];
-      stat = fs.statSync(userFile);
+      stat = lib.fs.statSync(userFile);
       if (stat.isDirectory()) {
-        documents = wrench.readdirSyncRecursive(userFile);
-        documents = _(documents).chain().flatten().unique().value();
+        documents = lib.wrench.readdirSyncRecursive(userFile);
+        documents = lib._(documents).chain().flatten().unique().value();
         _results.push((function() {
           var _j, _len1, _results1;
 
           _results1 = [];
           for (_j = 0, _len1 = documents.length; _j < _len1; _j++) {
             doc = documents[_j];
-            docPath = path.join(cwd, userFile, doc);
+            docPath = lib.path.join(cwd, userFile, doc);
             _results1.push(read(docPath, opts, callback));
           }
           return _results1;
         })());
       } else if (stat.isFile()) {
-        fullPath = path.join(cwd, userFile);
+        fullPath = lib.path.join(cwd, userFile);
         _results.push(read(fullPath, opts, callback));
       } else {
         _results.push(void 0);
@@ -504,11 +508,11 @@
     if (argv == null) {
       argv = {};
     }
-    program.version(pkg.version).usage("[options] [FILES...]").option("-o, --output [DIR]", "Documentation output file").option("-j, --join [FILE]", "Combine all documentation into one page").option("-f, --format [TYPE]", "Output format. Default to markdown (markdown | html)").option("-p, --private", "Parse comments for private functions and variables").option("-h, --header", "Only parse the first comment block").parse(argv);
-    if (program.args.length) {
-      return processFiles(program);
+    lib.program.version(pkg.version).usage("[options] [FILES...]").option("-o, --output [DIR]", "Documentation output file").option("-j, --join [FILE]", "Combine all documentation into one page").option("-f, --format [TYPE]", "Output format. Default to markdown (markdown | html)").option("-p, --private", "Parse comments for private functions and variables").option("-h, --header", "Only parse the first comment block").parse(argv);
+    if (lib.program.args.length) {
+      return processFiles(lib.program);
     } else {
-      return console.log(program.helpInformation());
+      return console.log(lib.program.helpInformation());
     }
   };
 
