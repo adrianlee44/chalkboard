@@ -67,12 +67,13 @@
 ##    -f, --format [TYPE]  Output format. Default to markdown
 ##
 
-program = require "commander"
-fs      = require "fs"
-path    = require "path"
-wrench  = require "wrench"
-_       = require "underscore"
-marked  = require "marked"
+lib =
+  program: require "commander"
+  fs:      require "fs"
+  path:    require "path"
+  wrench:  require "wrench"
+  _:       require "underscore"
+  marked:  require "marked"
 
 pkg         = require "./package.json"
 languages   = require "./resources/languages.json"
@@ -120,17 +121,20 @@ _repeatChar = (char, count = 0) ->
   Array(count+1).join char
 
 _getLanguages = (source, options = {}) ->
-  ext  = path.extname(source) or path.basename(source)
+  ext  = lib.path.extname(source) or lib.path.basename(source)
   lang = languages[ext]
 
   # Should fail silently when langauge is not supported
   # and move onto the next file
   return null unless lang?
 
-  regex = "^\\s*#{lang.symbol}{1,2}#{commentRegexStr}"
+  regex = "^\\s*(?:#{lang.symbol}){1,2}#{commentRegexStr}"
   lang.commentRegex = new RegExp regex
-  lang.lineRegex    = new RegExp "^\\s*#{lang.symbol}{1,2}\\s+(.*)"
+  lang.lineRegex    = new RegExp "^\\s*(?:#{lang.symbol}){1,2}\\s+(.*)"
   lang.blockRegex   = new RegExp lang.block
+
+  lang.startRegex = new RegExp lang.start if lang.start?
+  lang.endRegex   = new RegExp lang.end   if lang.end?
 
   return lang
 
@@ -192,7 +196,7 @@ parse = (code, lang, options = {})->
     keys[index]
 
   _multiLineSetAttribute = (value) ->
-    object = if _(argObject).isEmpty() then currentSection else argObject
+    object = if lib._(argObject).isEmpty() then currentSection else argObject
     value += "  \n" if value
     _setAttribute(object,
       _getMultiLineKey(-1),
@@ -201,7 +205,7 @@ parse = (code, lang, options = {})->
     )
 
   _setArgObject = ->
-    if multiLineKey and not _(argObject).isEmpty()
+    if multiLineKey and not lib._(argObject).isEmpty()
       _setAttribute(currentSection,
         _getMultiLineKey(0),
         argObject,
@@ -221,7 +225,7 @@ parse = (code, lang, options = {})->
   # push object to the correct array if necessary
   #
   _updateSection = ->
-    if hasComment and not _(currentSection).isEmpty()
+    if hasComment and not lib._(currentSection).isEmpty()
 
       # Check if there is remaining argObject to be cleared
       _setArgObject()
@@ -235,7 +239,8 @@ parse = (code, lang, options = {})->
   for line in code.split(NEW_LINE)
 
     # Check for starting and ending comment block
-    if line.match lang.blockRegex
+    blockRegex = if inCommentBlock then lang.endRegex else lang.startRegex
+    if line.match(blockRegex or lang.blockRegex)
       inCommentBlock = not inCommentBlock
       _updateSection() unless inCommentBlock
       continue
@@ -357,11 +362,11 @@ _formatKeyValue = (key, value, newLine = true, headerLevel = 3) ->
 
   output  = _repeatChar "#", headerLevel
   output += " #{_capitalize(displayName)}\n"
-  if _(value).isArray()
+  if lib._(value).isArray()
     for element in value
 
       # returns and param
-      if _(element).isObject()
+      if lib._(element).isObject()
         if element.name?
           output += "**#{element.name}**  \n"
         if element.type?
@@ -373,7 +378,7 @@ _formatKeyValue = (key, value, newLine = true, headerLevel = 3) ->
       else
         output += "-   #{element}  \n"
 
-  else if _(value).isString()
+  else if lib._(value).isString()
     output += "#{value}"
 
   output += "\n" if newLine
@@ -461,7 +466,7 @@ format = (sections, options) ->
     # Copyright, license, email and author should only be parsed once
     omitList.push "copyright", "license", "author", "email"
 
-    for key, value of _(section).omit omitList
+    for key, value of lib._(section).omit omitList
       output += _formatKeyValue(key, value)
 
   output += footer
@@ -489,7 +494,7 @@ compile = (code, options = {}, filepath) ->
   parsed    = parse code, lang, options
   formatted = format parsed, options
 
-  formatted = marked formatted if options.format is "html"
+  formatted = lib.marked formatted if options.format is "html"
   return formatted
 
 #
@@ -504,15 +509,15 @@ compile = (code, options = {}, filepath) ->
 # @returns {Boolean}           File has been read successfully
 #
 read = (file, options = {}, callback) ->
-  stat     = fs.existsSync(file) && fs.statSync(file)
-  relative = path.relative cwd, file
+  stat     = lib.fs.existsSync(file) && lib.fs.statSync(file)
+  relative = lib.path.relative cwd, file
 
   if stat and stat.isFile()
     lang = _getLanguages file, options
 
     return unless lang?
 
-    fs.readFile file, (error, buffer) ->
+    lib.fs.readFile file, (error, buffer) ->
       callback error if error?
 
       data           = buffer.toString()
@@ -542,26 +547,26 @@ read = (file, options = {}, callback) ->
 #
 write = (source, content, options = {}) ->
   if options.format is "html"
-    content = marked content
+    content = lib.marked content
 
   # Check if all the generated documentations are written to one file
   if options.join?
-    output = path.join cwd, options.join
-    fs.appendFileSync output, content
+    output = lib.path.join cwd, options.join
+    lib.fs.appendFileSync output, content
 
   # Check if output folder is specify
   else if options.output?
-    base     = _(options.files).find (file) -> source.indexOf file is 0
-    filename = path.basename source, path.extname(source)
-    relative = path.relative base, path.dirname(source)
-    filePath = path.join(relative, filename) + ".md"
-    output   = path.join cwd, options.output, filePath
-    dir      = path.dirname output
+    base     = lib._(options.files).find (file) -> source.indexOf file is 0
+    filename = lib.path.basename source, lib.path.extname(source)
+    relative = lib.path.relative base, lib.path.dirname(source)
+    filePath = lib.path.join(relative, filename) + ".md"
+    output   = lib.path.join cwd, options.output, filePath
+    dir      = lib.path.dirname output
 
-    unless fs.existsSync dir
-      wrench.mkdirSyncRecursive dir, 0o777
+    unless lib.fs.existsSync dir
+      lib.wrench.mkdirSyncRecursive dir, 0o777
 
-    fs.writeFileSync output, content
+    lib.fs.writeFileSync output, content
 
   else
     console.log content
@@ -575,17 +580,17 @@ write = (source, content, options = {}) ->
 # @param {Object} options User configurations
 #
 configure = (options) ->
-  opts = _.extend {}, defaults, _(options).pick(_(defaults).keys())
+  opts = lib._.extend {}, defaults, lib._(options).pick(lib._(defaults).keys())
 
   if opts.output and opts.join
     throw new Error "Cannot use both output and join option at the same time"
 
   # clean the existing file if all comments are compiled to one location
   if opts.join?
-    joinfilePath = path.join cwd, opts.join
+    joinfilePath = lib.path.join cwd, opts.join
 
     # Clear the original file by write empty string into it
-    fs.unlinkSync(joinfilePath) if fs.existsSync joinfilePath
+    lib.fs.unlinkSync(joinfilePath) if lib.fs.existsSync joinfilePath
 
   opts.files = options.args or []
 
@@ -600,21 +605,21 @@ processFiles = (options)->
     console.log "Generated documentation for #{source}"
 
   for userFile in opts.files
-    stat = fs.statSync userFile
+    stat = lib.fs.statSync userFile
 
     if stat.isDirectory()
-      documents = wrench.readdirSyncRecursive userFile
-      documents = _(documents).chain()
+      documents = lib.wrench.readdirSyncRecursive userFile
+      documents = lib._(documents).chain()
                     .flatten()
                     .unique()
                     .value()
 
       for doc in documents
-        docPath = path.join cwd, userFile, doc
+        docPath = lib.path.join cwd, userFile, doc
         read docPath, opts, callback
 
     else if stat.isFile()
-      fullPath = path.join cwd, userFile
+      fullPath = lib.path.join cwd, userFile
       read fullPath, opts, callback
 
 #
@@ -626,7 +631,7 @@ processFiles = (options)->
 # @param {Array} argv List of arguments
 #
 run = (argv = {})->
-  program
+  lib.program
     .version(pkg.version)
     .usage("[options] [FILES...]")
     .option("-o, --output [DIR]", "Documentation output file")
@@ -636,10 +641,10 @@ run = (argv = {})->
     .option("-h, --header", "Only parse the first comment block")
     .parse argv
 
-  if program.args.length
-    processFiles program
+  if lib.program.args.length
+    processFiles lib.program
   else
-    console.log program.helpInformation()
+    console.log lib.program.helpInformation()
 
 chalkboard = module.exports = {
   _capitalize,

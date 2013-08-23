@@ -22,8 +22,8 @@ exports.utilTest =
       name:         'coffeescript'
       symbol:       '#'
       block:        '###'
-      lineRegex:    /^\s*#{1,2}\s+(.*)/
-      commentRegex: /^\s*#{1,2}\s*(?:@(\w+))?(?:\s*(.*))?/
+      lineRegex:    /^\s*(?:#){1,2}\s+(.*)/
+      commentRegex: /^\s*(?:#){1,2}\s*(?:@(\w+))?(?:\s*(.*))?/
       blockRegex:   /###/
 
     test.deepEqual chalkboard._getLanguages("/test/test.coffee"), validSettings

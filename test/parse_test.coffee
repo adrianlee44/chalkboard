@@ -6,8 +6,8 @@ exports.parseTest =
       name:         'coffeescript'
       symbol:       '#'
       block:        '###'
-      commentRegex: /^\s*#{1,2}\s*(?:@(\w+))?(?:\s*(.*))?/
-      lineRegex:    /^\s*#{1,2}\s+(.*)/
+      commentRegex: /^\s*(?:#){1,2}\s*(?:@(\w+))?(?:\s*(.*))?/
+      lineRegex:    /^\s*(?:#){1,2}\s+(.*)/
       blockRegex:   /###/
 
     callback()
@@ -307,4 +307,58 @@ exports.parseTest =
     """
     ret = chalkboard.parse code, @lang, {}
     test.equal ret[0].version, "9000+"
+    test.done()
+
+exports.jsParseTest =
+  setUp: (callback) ->
+    @lang =
+      name:         'javascript'
+      symbol:       '//'
+      start:        '/*'
+      end:          '*/'
+      commentRegex: /^\s*(?:\/\/){1,2}\s*(?:@(\w+))?(?:\s*(.*))?/
+      lineRegex:    /^\s*(?:\/\/){1,2}\s+(.*)/
+      startRegex:   /\/\*/
+      endRegex:     /\*\//
+
+    callback()
+
+  "js chalk test": (test) ->
+    test.expect 2
+
+    code = """
+      //
+      // @name hello
+      //
+    """
+    ret = chalkboard.parse code, @lang, {}
+    test.equal ret.length, 0, "No section should be parsed"
+
+    code2 = """
+      //
+      // @chalk overview
+      // @name hello
+      //
+    """
+    ret = chalkboard.parse code2, @lang, {}
+    test.equal ret.length, 1, "1 section should be parsed"
+
+    test.done()
+
+  "js comment block": (test) ->
+    code = """
+      /*
+      @chalk overview
+      @name Testing
+      @description
+      Hello World
+      */
+    """
+    test.expect 2
+
+    ret = chalkboard.parse code, @lang, {}
+
+    test.equal ret[0].name, "Testing"
+    test.equal ret[0].description, "Hello World  \n"
+
     test.done()
