@@ -67,17 +67,21 @@
 ##    -f, --format [TYPE]  Output format. Default to markdown
 ##
 
-lib =
-  program: require "commander"
-  fs:      require "fs"
-  path:    require "path"
-  wrench:  require "wrench"
-  _:       require "underscore"
-  marked:  require "marked"
-
+util        = require "./lib/util"
 pkg         = require "./package.json"
 languages   = require "./resources/languages.json"
 definitions = require "./resources/definitions.json"
+
+packages = [
+  "commander"
+  "fs"
+  "path"
+  "wrench"
+  "marked"
+]
+lib             = {}
+lib[requirePkg] = require requirePkg for requirePkg in packages
+lib["_"]        = require "underscore"
 
 commentRegexStr = "\\s*(?:@(\\w+))?(?:\\s*(.*))?"
 lnValueRegexStr = "\\s*(.*)"
@@ -95,48 +99,6 @@ defaults =
   join:    null
   header:  false
   private: false
-
-#
-# @function
-# @name _captialize
-# @description
-# Capitalize the first letter of a string
-# @param {String} str String to be capitalized
-# @returns {String} Capitalized string
-#
-_capitalize = (str = "") ->
-  return str unless str
-  str[0].toUpperCase() + str[1..]
-
-#
-# @function
-# @nam _repeatChar
-# @description
-# Repeat a character multiple times
-# @param {Sting} char Character to repeat
-# @param {Integer} count Number of times to repeat the character
-# @returns {String} Processed string
-#
-_repeatChar = (char, count = 0) ->
-  Array(count+1).join char
-
-_getLanguages = (source, options = {}) ->
-  ext  = lib.path.extname(source) or lib.path.basename(source)
-  lang = languages[ext]
-
-  # Should fail silently when langauge is not supported
-  # and move onto the next file
-  return null unless lang?
-
-  regex = "^\\s*(?:#{lang.symbol}){1,2}#{commentRegexStr}"
-  lang.commentRegex = new RegExp regex
-  lang.lineRegex    = new RegExp "^\\s*(?:#{lang.symbol}){1,2}\\s+(.*)"
-  lang.blockRegex   = new RegExp lang.block
-
-  lang.startRegex = new RegExp lang.start if lang.start?
-  lang.endRegex   = new RegExp lang.end   if lang.end?
-
-  return lang
 
 #
 # @chalk function
@@ -360,8 +322,8 @@ _formatKeyValue = (key, value, newLine = true, headerLevel = 3) ->
   def         = definitions[key]
   displayName = if def?.displayName? then def.displayName else key
 
-  output  = _repeatChar "#", headerLevel
-  output += " #{_capitalize(displayName)}\n"
+  output  = util._repeatChar "#", headerLevel
+  output += " #{util._capitalize(displayName)}\n"
   if lib._(value).isArray()
     for element in value
 
@@ -487,7 +449,7 @@ format = (sections, options) ->
 compile = (code, options = {}, filepath) ->
   return unless filepath?
 
-  lang = _getLanguages filepath, options
+  lang = util._getLanguages filepath, options
 
   return null unless lang?
 
@@ -513,7 +475,7 @@ read = (file, options = {}, callback) ->
   relative = lib.path.relative cwd, file
 
   if stat and stat.isFile()
-    lang = _getLanguages file, options
+    lang = util._getLanguages file, options
 
     return unless lang?
 
@@ -631,7 +593,7 @@ processFiles = (options)->
 # @param {Array} argv List of arguments
 #
 run = (argv = {})->
-  lib.program
+  lib.commander
     .version(pkg.version)
     .usage("[options] [FILES...]")
     .option("-o, --output [DIR]", "Documentation output file")
@@ -641,15 +603,12 @@ run = (argv = {})->
     .option("-h, --header", "Only parse the first comment block")
     .parse argv
 
-  if lib.program.args.length
-    processFiles lib.program
+  if lib.commander.args.length
+    processFiles lib.commander
   else
-    console.log lib.program.helpInformation()
+    console.log lib.commander.helpInformation()
 
 chalkboard = module.exports = {
-  _capitalize,
-  _repeatChar,
-  _getLanguages,
   parse,
   run,
   compile,

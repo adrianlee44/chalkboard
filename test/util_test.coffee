@@ -1,4 +1,4 @@
-chalkboard = require "../chalkboard.js"
+chalkboard = require "../lib/util"
 
 exports.utilTest =
   "Capitalize Test": (test) ->
