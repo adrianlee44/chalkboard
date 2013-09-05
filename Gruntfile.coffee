@@ -33,7 +33,7 @@ module.exports = (grunt) ->
         tasks: ["coffeelint:gruntfile"]
 
       src:
-        files: "src/*.coffee"
+        files: "src/**/*.coffee"
         tasks: ["coffeelint:src", "coffee:src", "nodeunit", "chalkboard"]
 
       test:
@@ -44,8 +44,16 @@ module.exports = (grunt) ->
       options:
         join: true
       src:
-        files:
-          "chalkboard.js": ["src/*.coffee"]
+        files: [
+          {
+            expand: true
+            flatten: false
+            ext: ".js"
+            cwd: "src/"
+            src: ["**/*.coffee"]
+            dest: ""
+          }
+        ]
 
     chalkboard:
       src:
