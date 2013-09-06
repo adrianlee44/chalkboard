@@ -90,8 +90,8 @@ argsRegex       = /\{([\w\|\s]+)}\s+([\w\d_-]+)(?:\s+(.*))?/
 #                   Type            name       description
 returnRegex     = /\{([\w\|]+)}(?:\s+(.*))?/
 #                   Type        description
-NEW_LINE        = /\n\r?/
-cwd             = process.cwd()
+NEW_LINE = /\n\r?/
+cwd      = process.cwd()
 
 defaults =
   format:  "markdown"
@@ -250,7 +250,7 @@ parse = (code, lang, options = {})->
               Cannot have multiple access specifier.
             """
           else
-            currentSection.access = key
+            currentSection.access = if key is "access" then value else key
             continue
 
         # For generic identifier
