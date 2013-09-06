@@ -8,11 +8,16 @@
     "copyright": {},
     "url": {},
     "license": {},
+    "enums": {},
+    "since": {},
     "param": {
         "hasArgs": true,
         "hasMultiple": true,
         "displayName": "parameters",
         "multipleLines": true
+    },
+    "callback": {
+        "typeIdentifier": true
     },
     "function": {
         "typeIdentifier": true
@@ -30,6 +35,9 @@
         "identifier": true
     },
     "version": {},
+    "access": {
+        "accessIdentifier": true
+    },
     "private": {
         "accessIdentifier": true
     },
