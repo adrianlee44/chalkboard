@@ -295,6 +295,27 @@ exports.parseTest =
     test.equal ret[0].access, "public"
     test.done()
 
+  "using @access": (test) ->
+    code = """
+      #
+      # @chalk overview
+      # @name Testing Module
+      # @access public
+      #
+    """
+    ret = chalkboard.parse code, @lang, {}
+    test.equal ret[0].access, "public"
+    test.done()
+
+  "since tag test": (test) ->
+    code = """
+      # @chalk overview
+      # @since Yesterday
+    """
+    ret = chalkboard.parse code, @lang, {}
+    test.equal ret[0].since, "Yesterday"
+    test.done()
+
   "version test": (test) ->
     code = """
       #
