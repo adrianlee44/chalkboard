@@ -73,7 +73,6 @@ languages   = require "./resources/languages.json"
 definitions = require "./resources/definitions.json"
 
 packages = [
-  "commander"
   "fs"
   "path"
   "wrench"
@@ -86,12 +85,8 @@ lib["_"]        = require "underscore"
 commentRegexStr = "\\s*(?:@(\\w+))?(?:\\s*(.*))?"
 lnValueRegexStr = "\\s*(.*)"
 commentRegex    = new RegExp commentRegexStr
-argsRegex       = /\{([\w\|\s]+)}\s+([\w\d_-]+)(?:\s+(.*))?/
-#                   Type            name       description
-returnRegex     = /\{([\w\|]+)}(?:\s+(.*))?/
-#                   Type        description
-NEW_LINE = /\n\r?/
-cwd      = process.cwd()
+NEW_LINE        = /\n\r?/
+cwd             = process.cwd()
 
 defaults =
   format:  "markdown"
@@ -260,15 +255,18 @@ parse = (code, lang, options = {})->
         if hasArgs
           matchingRegex =
             switch key
-              when "returns" then returnRegex
-              else                argsRegex
+              when "returns"
+                /\{([\w\|]+)}(?:\s+(.*))?/
+                # Type        description
+              else
+                /\{([\w\|\s]+)}\s+([\w\d_-]+)(?:\s+(.*))?/
+                # Type            name       description
 
           # Check value for arguments
           # Used by param and returns tag
           argsMatch = value.match matchingRegex
           if argsMatch?
-            argObject =
-              type: argsMatch[1] or "undefined"
+            argObject = type: argsMatch[1] or "undefined"
             switch key
               when "param"
                 argObject.description  = argsMatch[3] or ""
@@ -307,49 +305,6 @@ parse = (code, lang, options = {})->
 #
 # @chalk function
 # @function
-# @private
-# @name _formatKeyValue
-# @description
-# Format value with type and description
-# @param {String}  key     Tag name
-# @param {String}  value   User input for the tag
-# @param {Boolean} newLine If a new line should be appended to the end
-#  (default true)
-# @param {Integer}  headerLevel The header level of the section name (default 3)
-# @returns {String} Formatted   Markdown string based on key and value
-#
-_formatKeyValue = (key, value, newLine = true, headerLevel = 3) ->
-  def         = definitions[key]
-  displayName = if def?.displayName? then def.displayName else key
-
-  output  = util._repeatChar "#", headerLevel
-  output += " #{util._capitalize(displayName)}\n"
-  if lib._(value).isArray()
-    for element in value
-
-      # returns and param
-      if lib._(element).isObject()
-        if element.name?
-          output += "**#{element.name}**  \n"
-        if element.type?
-          output += "Type: `#{element.type}`  \n"
-        if element.description? and element.description
-          output += "#{element.description}  \n"
-
-      # Everything else with just string
-      else
-        output += "-   #{element}  \n"
-
-  else if lib._(value).isString()
-    output += "#{value}"
-
-  output += "\n" if newLine
-
-  return output
-
-#
-# @chalk function
-# @function
 # @name format
 # @description
 # Format comment sections into readable format
@@ -369,13 +324,11 @@ format = (sections, options) ->
     # Skip through formatting private functions/variables
     continue if section.access? and (section.access is "private" and not options.private)
 
-    isDeprecated = section.deprecated?
-
     if section.name?
       output += "\n"
       if index
         output += "#{section.name}"
-        output += " (Deprecated)" if isDeprecated
+        output += " (Deprecated)" if section.deprecated? and section.deprecated
         output += "\n---\n"
 
       else
@@ -403,7 +356,7 @@ format = (sections, options) ->
       omitList.push "version"
 
     if section.author? and not index
-      footer += _formatKeyValue "author", section.author, false, 2
+      footer += util.formatKeyValue "author", section.author, false, 2
 
       if section.email?
         footer += " (#{section.email})"
@@ -422,14 +375,14 @@ format = (sections, options) ->
       copyrightAndLicense.content.push section.license
 
     if section.copyright? or section.license?
-      footer += _formatKeyValue copyrightAndLicense.header.join(" and "),
+      footer += util.formatKeyValue copyrightAndLicense.header.join(" and "),
         copyrightAndLicense.content.join("\n\n"), true, 2
 
     # Copyright, license, email and author should only be parsed once
     omitList.push "copyright", "license", "author", "email"
 
     for key, value of lib._(section).omit omitList
-      output += _formatKeyValue(key, value)
+      output += util.formatKeyValue(key, value)
 
   output += footer
 
@@ -449,53 +402,16 @@ format = (sections, options) ->
 compile = (code, options = {}, filepath) ->
   return unless filepath?
 
-  lang = util._getLanguages filepath, options
+  lang = util.getLanguages filepath, options
 
   return null unless lang?
 
   parsed    = parse code, lang, options
   formatted = format parsed, options
 
+  # TODO: Create plugin system to handle something like this
   formatted = lib.marked formatted if options.format is "html"
   return formatted
-
-#
-# @chalk function
-# @function
-# @name read
-# @description
-# Read the content of the file
-# @param   {String} file       File path
-# @param   {Object} options    User options
-# @param   {Function} callback Read callback
-# @returns {Boolean}           File has been read successfully
-#
-read = (file, options = {}, callback) ->
-  stat     = lib.fs.existsSync(file) && lib.fs.statSync(file)
-  relative = lib.path.relative cwd, file
-
-  if stat and stat.isFile()
-    lang = util._getLanguages file, options
-
-    return unless lang?
-
-    lib.fs.readFile file, (error, buffer) ->
-      callback error if error?
-
-      data           = buffer.toString()
-      parsedSections = parse data, lang, options
-      content        = format parsedSections, options
-
-      # Only write to file when there is content
-      if content
-        write relative, content, options
-        callback? relative
-
-  else if stat and stat.isDirectory()
-    # do nothing
-
-  else
-    callback? "Invalid file path - #{file}"
 
 #
 # @chalk function
@@ -508,13 +424,11 @@ read = (file, options = {}, callback) ->
 # @param {Object} options
 #
 write = (source, content, options = {}) ->
-  if options.format is "html"
-    content = lib.marked content
-
   # Check if all the generated documentations are written to one file
   if options.join?
     output = lib.path.join cwd, options.join
     lib.fs.appendFileSync output, content
+    return output
 
   # Check if output folder is specify
   else if options.output?
@@ -529,6 +443,7 @@ write = (source, content, options = {}) ->
       lib.wrench.mkdirSyncRecursive dir, 0o777
 
     lib.fs.writeFileSync output, content
+    return output
 
   else
     console.log content
@@ -561,10 +476,19 @@ configure = (options) ->
 processFiles = (options)->
   opts = configure options
 
-  callback = (source, error) ->
-    throw new Error(error) if error?
+  process = (path) ->
+    lib.fs.readFile path, (error, buffer) ->
+      throw new Error(error) if error?
 
-    console.log "Generated documentation for #{source}"
+      source    = buffer.toString()
+      formatted = compile source, opts, path
+
+      if formatted
+        relative  = lib.path.relative cwd, path
+        writeFile = write relative, formatted, opts
+
+      readFilename = lib.path.basename path
+      console.log """Generated documentation for "#{readFilename}"."""
 
   for userFile in opts.files
     stat = lib.fs.statSync userFile
@@ -578,42 +502,16 @@ processFiles = (options)->
 
       for doc in documents
         docPath = lib.path.join cwd, userFile, doc
-        read docPath, opts, callback
+        stat    = lib.fs.existsSync(docPath) && lib.fs.statSync(docPath)
+        process docPath if stat.isFile()
 
     else if stat.isFile()
-      fullPath = lib.path.join cwd, userFile
-      read fullPath, opts, callback
-
-#
-# @chalk function
-# @function
-# @name run
-# @description
-# Start the process of generating documentation with source code
-# @param {Array} argv List of arguments
-#
-run = (argv = {})->
-  lib.commander
-    .version(pkg.version)
-    .usage("[options] [FILES...]")
-    .option("-o, --output [DIR]", "Documentation output file")
-    .option("-j, --join [FILE]", "Combine all documentation into one page")
-    .option("-f, --format [TYPE]", "Output format. Default to markdown (markdown | html)")
-    .option("-p, --private", "Parse comments for private functions and variables")
-    .option("-h, --header", "Only parse the first comment block")
-    .parse argv
-
-  if lib.commander.args.length
-    processFiles lib.commander
-  else
-    console.log lib.commander.helpInformation()
+      process lib.path.join(cwd, userFile)
 
 chalkboard = module.exports = {
   parse,
-  run,
   compile,
   format,
-  read,
   write,
   processFiles,
   configure

@@ -10,5 +10,22 @@
 
 var path = require('path'),
     fs   = require('fs'),
-    dir  = path.join(path.dirname(fs.realpathSync(__filename)), '../');
-require(dir + 'chalkboard.js').run(process.argv);
+    dir  = path.join(path.dirname(fs.realpathSync(__filename)), '../'),
+    pkg  = require(dir + 'package.json'),
+    commander = require('commander');
+
+commander
+	.version(pkg.version)
+	.usage("[options] [FILES...]")
+	.option("-o, --output [DIR]", "Documentation output file")
+	.option("-j, --join [FILE]", "Combine all documentation into one page")
+	.option("-f, --format [TYPE]", "Output format. Default to markdown (markdown | html)")
+	.option("-p, --private", "Parse comments for private functions and variables")
+	.option("-h, --header", "Only parse the first comment block")
+	.parse(process.argv);
+
+	if (commander.args.length) {
+		require(dir + 'chalkboard.js').processFiles(commander);
+	} else {
+		console.log(commander.helpInformation());
+	}
