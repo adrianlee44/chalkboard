@@ -1,7 +1,7 @@
 {
   "name": "chalkboard",
   "description": "Documentation generator for coffeescript",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "homepage": "https://github.com/adrianlee44/chalkboard",
   "author": {
     "name": "Adrian Lee",
@@ -39,7 +39,12 @@
     "grunt-chalkboard": "~0.1.0",
     "matchdep": "~0.1.2"
   },
-  "keywords": [],
+  "keywords": [
+    "javascript",
+    "coffeescript",
+    "jsdoc",
+    "documentation"
+  ],
   "dependencies": {
     "commander": "~1.1.1",
     "wrench": "~1.4.4",

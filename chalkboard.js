@@ -1,14 +1,7 @@
 (function() {
-  var NEW_LINE, argsRegex, chalkboard, commentRegex, commentRegexStr, compile, configure, cwd, defaults, definitions, format, languages, lib, lnValueRegexStr, parse, pkg, processFiles, read, returnRegex, run, write, _capitalize, _formatKeyValue, _getLanguages, _repeatChar;
+  var NEW_LINE, chalkboard, commentRegex, commentRegexStr, compile, configure, cwd, defaults, definitions, format, languages, lib, lnValueRegexStr, packages, parse, pkg, processFiles, requirePkg, util, write, _i, _len;
 
-  lib = {
-    program: require("commander"),
-    fs: require("fs"),
-    path: require("path"),
-    wrench: require("wrench"),
-    _: require("underscore"),
-    marked: require("marked")
-  };
+  util = require("./lib/util");
 
   pkg = require("./package.json");
 
@@ -16,15 +9,22 @@
 
   definitions = require("./resources/definitions.json");
 
+  packages = ["fs", "path", "wrench", "marked"];
+
+  lib = {};
+
+  for (_i = 0, _len = packages.length; _i < _len; _i++) {
+    requirePkg = packages[_i];
+    lib[requirePkg] = require(requirePkg);
+  }
+
+  lib["_"] = require("underscore");
+
   commentRegexStr = "\\s*(?:@(\\w+))?(?:\\s*(.*))?";
 
   lnValueRegexStr = "\\s*(.*)";
 
   commentRegex = new RegExp(commentRegexStr);
-
-  argsRegex = /\{([\w\|\s]+)}\s+([\w\d_-]+)(?:\s+(.*))?/;
-
-  returnRegex = /\{([\w\|]+)}(?:\s+(.*))?/;
 
   NEW_LINE = /\n\r?/;
 
@@ -38,50 +38,8 @@
     "private": false
   };
 
-  _capitalize = function(str) {
-    if (str == null) {
-      str = "";
-    }
-    if (!str) {
-      return str;
-    }
-    return str[0].toUpperCase() + str.slice(1);
-  };
-
-  _repeatChar = function(char, count) {
-    if (count == null) {
-      count = 0;
-    }
-    return Array(count + 1).join(char);
-  };
-
-  _getLanguages = function(source, options) {
-    var ext, lang, regex;
-
-    if (options == null) {
-      options = {};
-    }
-    ext = lib.path.extname(source) || lib.path.basename(source);
-    lang = languages[ext];
-    if (lang == null) {
-      return null;
-    }
-    regex = "^\\s*(?:" + lang.symbol + "){1,2}" + commentRegexStr;
-    lang.commentRegex = new RegExp(regex);
-    lang.lineRegex = new RegExp("^\\s*(?:" + lang.symbol + "){1,2}\\s+(.*)");
-    lang.blockRegex = new RegExp(lang.block);
-    if (lang.start != null) {
-      lang.startRegex = new RegExp(lang.start);
-    }
-    if (lang.end != null) {
-      lang.endRegex = new RegExp(lang.end);
-    }
-    return lang;
-  };
-
   parse = function(code, lang, options) {
-    var allSections, argObject, argsMatch, blockRegex, currentSection, def, hasArgs, hasComment, inCommentBlock, key, line, lnMatch, match, matchingRegex, multiLineKey, toMatchRegex, value, _getMultiLineKey, _i, _len, _multiLineSetAttribute, _ref, _setArgObject, _setAttribute, _updateSection;
-
+    var allSections, argObject, argsMatch, blockRegex, currentSection, def, hasArgs, hasComment, inCommentBlock, key, line, lnMatch, match, matchingRegex, multiLineKey, toMatchRegex, value, _getMultiLineKey, _j, _len1, _multiLineSetAttribute, _ref, _setArgObject, _setAttribute, _updateSection;
     if (options == null) {
       options = {};
     }
@@ -92,18 +50,16 @@
     currentSection = {};
     argObject = {};
     _setAttribute = function(object, key, value, options) {
-      var _ref, _ref1;
-
       if (options == null) {
         options = {};
       }
       if ((options.hasMultiple != null) && options.hasMultiple) {
-        if ((_ref = object[key]) == null) {
+        if (object[key] == null) {
           object[key] = [];
         }
         return object[key].push(value);
       } else {
-        if ((_ref1 = object[key]) == null) {
+        if (object[key] == null) {
           object[key] = "";
         }
         return object[key] += value;
@@ -111,7 +67,6 @@
     };
     _getMultiLineKey = function(index) {
       var keys;
-
       keys = multiLineKey.split(".");
       if (index < 0) {
         index = keys.length + index;
@@ -123,7 +78,6 @@
     };
     _multiLineSetAttribute = function(value) {
       var object;
-
       object = lib._(argObject).isEmpty() ? currentSection : argObject;
       if (value) {
         value += "  \n";
@@ -146,8 +100,8 @@
       return hasComment = false;
     };
     _ref = code.split(NEW_LINE);
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      line = _ref[_i];
+    for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+      line = _ref[_j];
       blockRegex = inCommentBlock ? lang.endRegex : lang.startRegex;
       if (line.match(blockRegex || lang.blockRegex)) {
         inCommentBlock = !inCommentBlock;
@@ -187,7 +141,7 @@
             if (currentSection.access != null) {
               console.log("Cannot have multiple access specifier.");
             } else {
-              currentSection.access = key;
+              currentSection.access = key === "access" ? value : key;
               continue;
             }
           }
@@ -198,9 +152,9 @@
             matchingRegex = (function() {
               switch (key) {
                 case "returns":
-                  return returnRegex;
+                  return /\{([\w\|]+)}(?:\s+(.*))?/;
                 default:
-                  return argsRegex;
+                  return /\{([\w\|\s]+)}\s+([\w\d_-]+)(?:\s+(.*))?/;
               }
             })();
             argsMatch = value.match(matchingRegex);
@@ -242,51 +196,11 @@
     return allSections;
   };
 
-  _formatKeyValue = function(key, value, newLine, headerLevel) {
-    var def, displayName, element, output, _i, _len;
-
-    if (newLine == null) {
-      newLine = true;
-    }
-    if (headerLevel == null) {
-      headerLevel = 3;
-    }
-    def = definitions[key];
-    displayName = (def != null ? def.displayName : void 0) != null ? def.displayName : key;
-    output = _repeatChar("#", headerLevel);
-    output += " " + (_capitalize(displayName)) + "\n";
-    if (lib._(value).isArray()) {
-      for (_i = 0, _len = value.length; _i < _len; _i++) {
-        element = value[_i];
-        if (lib._(element).isObject()) {
-          if (element.name != null) {
-            output += "**" + element.name + "**  \n";
-          }
-          if (element.type != null) {
-            output += "Type: `" + element.type + "`  \n";
-          }
-          if ((element.description != null) && element.description) {
-            output += "" + element.description + "  \n";
-          }
-        } else {
-          output += "-   " + element + "  \n";
-        }
-      }
-    } else if (lib._(value).isString()) {
-      output += "" + value;
-    }
-    if (newLine) {
-      output += "\n";
-    }
-    return output;
-  };
-
   format = function(sections, options) {
-    var copyrightAndLicense, footer, index, isDeprecated, key, omitList, output, section, value, _i, _len, _ref;
-
+    var copyrightAndLicense, footer, index, key, omitList, output, section, value, _j, _len1, _ref;
     output = "";
     footer = "";
-    for (index = _i = 0, _len = sections.length; _i < _len; index = ++_i) {
+    for (index = _j = 0, _len1 = sections.length; _j < _len1; index = ++_j) {
       section = sections[index];
       omitList = ["chalk"];
       if (options.header && index > 1) {
@@ -295,12 +209,11 @@
       if ((section.access != null) && (section.access === "private" && !options["private"])) {
         continue;
       }
-      isDeprecated = section.deprecated != null;
       if (section.name != null) {
         output += "\n";
         if (index) {
           output += "" + section.name;
-          if (isDeprecated) {
+          if ((section.deprecated != null) && section.deprecated) {
             output += " (Deprecated)";
           }
           output += "\n---\n";
@@ -331,7 +244,7 @@
         omitList.push("version");
       }
       if ((section.author != null) && !index) {
-        footer += _formatKeyValue("author", section.author, false, 2);
+        footer += util.formatKeyValue("author", section.author, false, 2);
         if (section.email != null) {
           footer += " (" + section.email + ")";
         }
@@ -350,13 +263,13 @@
         copyrightAndLicense.content.push(section.license);
       }
       if ((section.copyright != null) || (section.license != null)) {
-        footer += _formatKeyValue(copyrightAndLicense.header.join(" and "), copyrightAndLicense.content.join("\n\n"), true, 2);
+        footer += util.formatKeyValue(copyrightAndLicense.header.join(" and "), copyrightAndLicense.content.join("\n\n"), true, 2);
       }
       omitList.push("copyright", "license", "author", "email");
       _ref = lib._(section).omit(omitList);
       for (key in _ref) {
         value = _ref[key];
-        output += _formatKeyValue(key, value);
+        output += util.formatKeyValue(key, value);
       }
     }
     output += footer;
@@ -365,14 +278,13 @@
 
   compile = function(code, options, filepath) {
     var formatted, lang, parsed;
-
     if (options == null) {
       options = {};
     }
     if (filepath == null) {
       return;
     }
-    lang = _getLanguages(filepath, options);
+    lang = util.getLanguages(filepath, options);
     if (lang == null) {
       return null;
     }
@@ -384,52 +296,15 @@
     return formatted;
   };
 
-  read = function(file, options, callback) {
-    var lang, relative, stat;
-
-    if (options == null) {
-      options = {};
-    }
-    stat = lib.fs.existsSync(file) && lib.fs.statSync(file);
-    relative = lib.path.relative(cwd, file);
-    if (stat && stat.isFile()) {
-      lang = _getLanguages(file, options);
-      if (lang == null) {
-        return;
-      }
-      return lib.fs.readFile(file, function(error, buffer) {
-        var content, data, parsedSections;
-
-        if (error != null) {
-          callback(error);
-        }
-        data = buffer.toString();
-        parsedSections = parse(data, lang, options);
-        content = format(parsedSections, options);
-        if (content) {
-          write(relative, content, options);
-          return typeof callback === "function" ? callback(relative) : void 0;
-        }
-      });
-    } else if (stat && stat.isDirectory()) {
-
-    } else {
-      return typeof callback === "function" ? callback("Invalid file path - " + file) : void 0;
-    }
-  };
-
   write = function(source, content, options) {
     var base, dir, filePath, filename, output, relative;
-
     if (options == null) {
       options = {};
-    }
-    if (options.format === "html") {
-      content = lib.marked(content);
     }
     if (options.join != null) {
       output = lib.path.join(cwd, options.join);
-      return lib.fs.appendFileSync(output, content);
+      lib.fs.appendFileSync(output, content);
+      return output;
     } else if (options.output != null) {
       base = lib._(options.files).find(function(file) {
         return source.indexOf(file === 0);
@@ -442,7 +317,8 @@
       if (!lib.fs.existsSync(dir)) {
         lib.wrench.mkdirSyncRecursive(dir, 0x1ff);
       }
-      return lib.fs.writeFileSync(output, content);
+      lib.fs.writeFileSync(output, content);
+      return output;
     } else {
       return console.log(content);
     }
@@ -450,7 +326,6 @@
 
   configure = function(options) {
     var joinfilePath, opts;
-
     opts = lib._.extend({}, defaults, lib._(options).pick(lib._(defaults).keys()));
     if (opts.output && opts.join) {
       throw new Error("Cannot use both output and join option at the same time");
@@ -466,37 +341,49 @@
   };
 
   processFiles = function(options) {
-    var callback, doc, docPath, documents, fullPath, opts, stat, userFile, _i, _len, _ref, _results;
-
+    var doc, docPath, documents, opts, process, stat, userFile, _j, _len1, _ref, _results;
     opts = configure(options);
-    callback = function(source, error) {
-      if (error != null) {
-        throw new Error(error);
-      }
-      return console.log("Generated documentation for " + source);
+    process = function(path) {
+      return lib.fs.readFile(path, function(error, buffer) {
+        var formatted, readFilename, relative, source, writeFile;
+        if (error != null) {
+          throw new Error(error);
+        }
+        source = buffer.toString();
+        formatted = compile(source, opts, path);
+        if (formatted) {
+          relative = lib.path.relative(cwd, path);
+          writeFile = write(relative, formatted, opts);
+        }
+        readFilename = lib.path.basename(path);
+        return console.log("Generated documentation for \"" + readFilename + "\".");
+      });
     };
     _ref = opts.files;
     _results = [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      userFile = _ref[_i];
+    for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+      userFile = _ref[_j];
       stat = lib.fs.statSync(userFile);
       if (stat.isDirectory()) {
         documents = lib.wrench.readdirSyncRecursive(userFile);
         documents = lib._(documents).chain().flatten().unique().value();
         _results.push((function() {
-          var _j, _len1, _results1;
-
+          var _k, _len2, _results1;
           _results1 = [];
-          for (_j = 0, _len1 = documents.length; _j < _len1; _j++) {
-            doc = documents[_j];
+          for (_k = 0, _len2 = documents.length; _k < _len2; _k++) {
+            doc = documents[_k];
             docPath = lib.path.join(cwd, userFile, doc);
-            _results1.push(read(docPath, opts, callback));
+            stat = lib.fs.existsSync(docPath) && lib.fs.statSync(docPath);
+            if (stat.isFile()) {
+              _results1.push(process(docPath));
+            } else {
+              _results1.push(void 0);
+            }
           }
           return _results1;
         })());
       } else if (stat.isFile()) {
-        fullPath = lib.path.join(cwd, userFile);
-        _results.push(read(fullPath, opts, callback));
+        _results.push(process(lib.path.join(cwd, userFile)));
       } else {
         _results.push(void 0);
       }
@@ -504,27 +391,10 @@
     return _results;
   };
 
-  run = function(argv) {
-    if (argv == null) {
-      argv = {};
-    }
-    lib.program.version(pkg.version).usage("[options] [FILES...]").option("-o, --output [DIR]", "Documentation output file").option("-j, --join [FILE]", "Combine all documentation into one page").option("-f, --format [TYPE]", "Output format. Default to markdown (markdown | html)").option("-p, --private", "Parse comments for private functions and variables").option("-h, --header", "Only parse the first comment block").parse(argv);
-    if (lib.program.args.length) {
-      return processFiles(lib.program);
-    } else {
-      return console.log(lib.program.helpInformation());
-    }
-  };
-
   chalkboard = module.exports = {
-    _capitalize: _capitalize,
-    _repeatChar: _repeatChar,
-    _getLanguages: _getLanguages,
     parse: parse,
-    run: run,
     compile: compile,
     format: format,
-    read: read,
     write: write,
     processFiles: processFiles,
     configure: configure

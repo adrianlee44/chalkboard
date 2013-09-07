@@ -130,33 +130,6 @@ Formatted documentation
   
 
 
-read
----
-
-Read the content of the file  
-  
-Type: `function`  
-
-### Parameters
-**file**  
-Type: `String`  
-File path  
-  
-**options**  
-Type: `Object`  
-User options  
-  
-**callback**  
-Type: `Function`  
-Read callback  
-  
-
-### Returns
-Type: `Boolean`  
-File has been read successfully  
-  
-
-
 write
 ---
 
@@ -188,20 +161,6 @@ Type: `function`
 **options**  
 Type: `Object`  
 User configurations  
-  
-
-
-run
----
-
-Start the process of generating documentation with source code  
-  
-Type: `function`  
-
-### Parameters
-**argv**  
-Type: `Array`  
-List of arguments  
   
 
 ## Author
