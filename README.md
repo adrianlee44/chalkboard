@@ -53,6 +53,8 @@ Options:
 -o, --output [DIR]   Documentation output file  
 -j, --join [FILE]    Combine all documentation into one page  
 -f, --format [TYPE]  Output format. Default to markdown  
+-p, --private        Parse comments for private functions and varibles  
+-h, --header         Only parse the first comment block  
   
 
 parse
