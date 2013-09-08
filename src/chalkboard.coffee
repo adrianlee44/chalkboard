@@ -1,71 +1,73 @@
-##
-## @chalk overview
-## @name Chalkboard.js
-##
-## @description
-## [![Build Status](https://travis-ci.org/adrianlee44/chalkboard.png?branch=master)](https://travis-ci.org/adrianlee44/chalkboard)
-## An npm package that generate better documentation
-##
-## @author Adrian Lee
-## @email adrian@radianstudio.com
-## @copyright 2013 Adrian Lee
-## @url https://github.com/adrianlee44/chalkboard
-## @license MIT
-##
-## @dependencies
-## - commander
-## - wrench
-## - marked
-## - underscore
-##
-## @example
-## ```
-## #
-## # @chalk overview
-## # @name example
-## # @description
-## # This is an example description for an example in readme.
-## # @param {String} name Just a random name
-## # @param {Boolean} work Does this actually work?
-## # @returns {String} Just another value
-## #
-## ```
-##
-## @TODO
-## [TODO Wiki](https://github.com/adrianlee44/chalkboard/wiki/TODO)
-##
+###
+@chalk overview
+@name Chalkboard.js
 
-##
-## @chalk overview
-## @name Supported Tags
-## @description
-## [Wiki Page](https://github.com/adrianlee44/chalkboard/wiki/Supported-Tags)
-##
+@description
+[![Build Status](https://travis-ci.org/adrianlee44/chalkboard.png?branch=master)](https://travis-ci.org/adrianlee44/chalkboard)
+An npm package that generate better documentation
 
-##
-## @chalk overview
-## @name Getting Started
-## @description
-## The easiest way to use chalkboard will probably be to install it globally.
-##
-## To do so, install the module with:
-## ```
-## npm install -g chalkboard
-## ```
-##
+@author Adrian Lee
+@email adrian@radianstudio.com
+@copyright 2013 Adrian Lee
+@url https://github.com/adrianlee44/chalkboard
+@license MIT
 
-##
-## @chalk overview
-## @name Usage
-## @description
-##  Usage: chalkboard [options] [FILES...]
-##  Options:
-##    -h, --help           output usage information
-##    -V, --version        output the version number
-##    -o, --output [DIR]   Documentation output file
-##    -j, --join [FILE]    Combine all documentation into one page
-##    -f, --format [TYPE]  Output format. Default to markdown
-##
+@dependencies
+- commander
+- wrench
+- marked
+- underscore
+
+@example
+```
+#
+# @chalk overview
+# @name example
+# @description
+# This is an example description for an example in readme.
+# @param {String} name Just a random name
+# @param {Boolean} work Does this actually work?
+# @returns {String} Just another value
+#
+```
+
+@TODO
+[TODO Wiki](https://github.com/adrianlee44/chalkboard/wiki/TODO)
+###
+
+###
+@chalk overview
+@name Supported Tags
+@description
+[Wiki Page](https://github.com/adrianlee44/chalkboard/wiki/Supported-Tags)
+###
+
+###
+@chalk overview
+@name Getting Started
+@description
+The easiest way to use chalkboard will probably be to install it globally.
+
+To do so, install the module with:
+```
+npm install -g chalkboard
+```
+###
+
+###
+@chalk overview
+@name Usage
+@description
+ Usage: chalkboard [options] [FILES...]
+ Options:
+   -h, --help           output usage information
+   -V, --version        output the version number
+   -o, --output [DIR]   Documentation output file
+   -j, --join [FILE]    Combine all documentation into one page
+   -f, --format [TYPE]  Output format. Default to markdown
+   -p, --private        Parse comments for private functions and varibles
+   -h, --header         Only parse the first comment block
+###
 
 util        = require "./lib/util"
 pkg         = require "./package.json"
