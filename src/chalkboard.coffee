@@ -74,15 +74,10 @@ pkg         = require "./package.json"
 languages   = require "./resources/languages.json"
 definitions = require "./resources/definitions.json"
 
-packages = [
-  "fs"
-  "path"
-  "wrench"
-  "marked"
-]
+packages        = ["fs", "path", "wrench", "marked"]
 lib             = {}
 lib[requirePkg] = require requirePkg for requirePkg in packages
-lib["_"]        = require "underscore"
+_               = require "underscore"
 
 commentRegexStr = "\\s*(?:@(\\w+))?(?:\\s*(.*))?"
 lnValueRegexStr = "\\s*(.*)"
@@ -155,7 +150,7 @@ parse = (code, lang, options = {})->
     keys[index]
 
   _multiLineSetAttribute = (value) ->
-    object = if lib._(argObject).isEmpty() then currentSection else argObject
+    object = if _(argObject).isEmpty() then currentSection else argObject
     value += "  \n" if value
     _setAttribute(object,
       _getMultiLineKey(-1),
@@ -164,7 +159,7 @@ parse = (code, lang, options = {})->
     )
 
   _setArgObject = ->
-    if multiLineKey and not lib._(argObject).isEmpty()
+    if multiLineKey and not _(argObject).isEmpty()
       _setAttribute(currentSection,
         _getMultiLineKey(0),
         argObject,
@@ -184,7 +179,7 @@ parse = (code, lang, options = {})->
   # push object to the correct array if necessary
   #
   _updateSection = ->
-    if hasComment and not lib._(currentSection).isEmpty()
+    if hasComment and not _(currentSection).isEmpty()
 
       # Check if there is remaining argObject to be cleared
       _setArgObject()
@@ -383,7 +378,7 @@ format = (sections, options) ->
     # Copyright, license, email and author should only be parsed once
     omitList.push "copyright", "license", "author", "email"
 
-    for key, value of lib._(section).omit omitList
+    for key, value of _(section).omit omitList
       output += util.formatKeyValue(key, value)
 
   output += footer
@@ -434,7 +429,7 @@ write = (source, content, options = {}) ->
 
   # Check if output folder is specify
   else if options.output?
-    base     = lib._(options.files).find (file) -> source.indexOf file is 0
+    base     = _(options.files).find (file) -> source.indexOf file is 0
     filename = lib.path.basename source, lib.path.extname(source)
     relative = lib.path.relative base, lib.path.dirname(source)
     filePath = lib.path.join(relative, filename) + ".md"
@@ -459,7 +454,8 @@ write = (source, content, options = {}) ->
 # @param {Object} options User configurations
 #
 configure = (options) ->
-  opts = lib._.extend {}, defaults, lib._(options).pick(lib._(defaults).keys())
+  optsKeys = _(defaults).keys()
+  opts     = _.extend {}, defaults, _.pick(options, optsKeys)
 
   if opts.output and opts.join
     throw new Error "Cannot use both output and join option at the same time"
@@ -497,14 +493,12 @@ processFiles = (options)->
 
     if stat.isDirectory()
       documents = lib.wrench.readdirSyncRecursive userFile
-      documents = lib._(documents).chain()
-                    .flatten()
-                    .unique()
-                    .value()
+      findAll   = _.compose _.unique, _.flatten
+      documents = findAll documents
 
       for doc in documents
         docPath = lib.path.join cwd, userFile, doc
-        stat    = lib.fs.existsSync(docPath) && lib.fs.statSync(docPath)
+        stat    = lib.fs.existsSync(docPath) and lib.fs.statSync(docPath)
         process docPath if stat.isFile()
 
     else if stat.isFile()
