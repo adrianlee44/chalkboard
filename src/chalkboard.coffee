@@ -7,7 +7,7 @@
 An npm package that generate better documentation
 
 @author Adrian Lee
-@email adrian@radianstudio.com
+@email adrian@adrianlee.me
 @copyright 2013 Adrian Lee
 @url https://github.com/adrianlee44/chalkboard
 @license MIT
