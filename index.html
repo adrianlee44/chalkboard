@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Chalkboard</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css">
+        <link href="prettify.css" type="text/css" rel="stylesheet" />
+        <style type="text/css">
+            body {background: #ECF0F1; color: #333;}
+            .container, .container .jumbotron {background-color: #fff;}
+            .container .jumbotron{margin-bottom: 0px; border-radius: 0px;}
+            .sample-code {background: #002451;}
+            .sample-code pre.prettyprint {border: none;}
+            .footer {padding: 60px 0px 40px 0px;}
+            .footer p {margin-bottom: 0px;}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="jumbotron">
+                <h1>Chalkboard</h1>
+                <p>A small node package parsing source code and generating simple documentation</p>
+                <iframe src="http://ghbtns.com/github-btn.html?user=adrianlee44&repo=chalkboard&type=watch&count=true"
+  allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"></iframe>
+                <iframe src="http://ghbtns.com/github-btn.html?user=adrianlee44&repo=chalkboard&type=fork&count=true"
+  allowtransparency="true" frameborder="0" scrolling="0" width="95" height="20"></iframe>
+                <div class="pull-right">
+                    <a class="btn btn-default" href="https://github.com/adrianlee44/chalkboard">
+                        <i class="icon-github-alt"></i>
+                        View on Github
+                    </a>
+                    <a class="btn btn-success" href="https://npmjs.org/package/chalkboard">
+                        <i class="icon-cloud"></i>
+                        Check it out on npm
+                    </a>
+                </div>
+
+            </div>
+            <div class="row sample-code">
+                <div class="col-xs-12 col-md-10 col-md-offset-1">
+                    <pre class="prettyprint lang-coffee">
+@chalk overview
+@name Chalkboard.js
+
+@description
+"Chalkboard is a Coffeescript documentation generator. Docco is great but it is very simple. This project took inspiration from JSDoc to parse Coffeescript better for documentation. Chalkboard allows user to indicate variable types, function parameters, return variables and much more.
+
+Although it is originally written for parsing Coffeescript, it can be updated to parse other languages. Currently, it can generate documentation from Coffeescript and Javascript.
+
+(quotes are only added around this block to make prettify render this better, it's not needed)"
+
+@url https://github.com/adrianlee44/chalkboard
+@license MIT
+                    </pre>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12 col-md-10 col-md-offset-1">
+                    <h3>How to use this?</h3>
+                    <ol>
+                        <li>Install Chalkboard with <a href="https://npmjs.org/">npm</a>: <pre>sudo npm install -g chalkboard</pre></li>
+                        <li>Comment your code with supported tags and add <code>@chalk</code> to the beginning of each comment block</li>
+                        <li>Run it against any files: <pre>chalkboard -j DOC.md src/</pre></li>
+                        <li>If you use <a href="http://gruntjs.com">Grunt</a>: <pre>npm install grunt-chalkboard</pre></li>
+                    </ol>
+
+                    <h3>Supported Tags</h3>
+                </div>
+            </div>
+
+            <div class="row support-tags">
+                <div class="col-xs-12 col-md-5 col-md-offset-1">
+                    <ul>
+                        <li><code>@name</code> - Name of the file, function, variable</li>
+                        <li><code>@description</code> - A summary/description</li>
+                        <li><code>@author</code> - Author of the file</li>
+                        <li><code>@email</code> - Email of the author</li>
+                        <li><code>@copyright</code> - Copyright information</li>
+                        <li><code>@url</code> - Project URL</li>
+                        <li><code>@license</code> - Software license for the code</li>
+                        <li><code>@enums</code> - Document object property</li>
+                        <li><code>@since</code> - Time when this is created</li>
+                        <li><code>@param</code> - Parameter of a function</li>
+                    </ul>
+                </div>
+                <div class="col-xs-12 col-md-6">
+                    <ul>
+                        <li><code>@callback</code> - Callback function type</li>
+                        <li><code>@function</code> - Document function</li>
+                        <li><code>@returns</code> - Return value of a function</li>
+                        <li><code>@variable</code> - Document variable</li>
+                        <li><code>@deprecated</code> - Function/variable no longer available</li>
+                        <li><code>@version</code> - Version of the code</li>
+                        <li><code>@access</code> - Access level of the variable</li>
+                        <li><code>@private</code> - Private shortcut for access</li>
+                        <li><code>@public</code> - Public shortcut for access</li>
+                        <li><code>@dependencies</code> - Document all dependencies</li>
+                        <li><code>@example</code> - Document example code</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12 col-md-10 col-md-offset-1">
+                    <h3>Command line interface</h3>
+                </div>
+            </div>
+
+            <div class="row sample-code">
+                <div class="col-xs-12 col-md-10 col-md-offset-1">
+                    <pre class="prettyprint lang-bash">
+                        Usage: chalkboard [options] [FILES...]
+
+                        Options:
+
+                          -h, --help           output usage information
+                          -V, --version        output the version number
+                          -o, --output [DIR]   Documentation output file
+                          -j, --join [FILE]    Combine all documentation into one page
+                          -f, --format [TYPE]  Output format. Default to markdown (markdown | html)
+                          -p, --private        Parse comments for private functions and variables
+                          -h, --header         Only parse the first comment block
+                    </pre>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12 col-md-10 col-md-offset-1">
+                    <h3>Public API</h3>
+                </div>
+            </div>
+
+            <div class="row sample-code">
+                <div class="col-xs-12 col-md-10 col-md-offset-1">
+                    <pre class="prettyprint lang-coffee">
+                        chalkboard = module.exports = {
+                          parse,
+                          compile,
+                          format,
+                          write,
+                          processFiles,
+                          configure
+                        }
+                    </pre>
+                </div>
+            </div>
+
+            <div class="row footer">
+                <div class="col-xs-12 col-md-10 col-md-offset-1">
+                    <p>Chalkboard is built by <a href="https://github.com/adrianlee44">Adrian</a> and licensed under <a href="https://github.com/adrianlee44/chalkboard/blob/master/LICENSE-MIT">MIT</a></p>
+                    <ul class="list-inline">
+                        <li><a href="https://github.com/adrianlee44/chalkboard">Chalkboard</a></li>
+                        <li>·</li>
+                        <li><a href="https://github.com/adrianlee44/chalkboard/issues?state=open">Issues</a></li>
+                        <li>·</li>
+                        <li><a href="https://twitter.com/adrianthemole">Twitter</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+        <script type="text/javascript">
+            prettyPrint()
+        </script>
+
+    </body>
+</html>
