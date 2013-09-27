@@ -166,7 +166,7 @@ User configurations
   
 
 ## Author
-Adrian Lee (adrian@radianstudio.com)
+Adrian Lee (adrian@adrianlee.me)
 ## Copyright and license
 2013 Adrian Lee
 
