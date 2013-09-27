@@ -1,5 +1,80 @@
+/*
+@chalk overview
+@name Chalkboard.js
+
+@description
+[![Build Status](https://travis-ci.org/adrianlee44/chalkboard.png?branch=master)](https://travis-ci.org/adrianlee44/chalkboard)
+An npm package that generate better documentation
+
+@author Adrian Lee
+@email adrian@adrianlee.me
+@copyright 2013 Adrian Lee
+@url https://github.com/adrianlee44/chalkboard
+@license MIT
+
+@dependencies
+- commander
+- wrench
+- marked
+- underscore
+
+@example
+```
+#
+# @chalk overview
+# @name example
+# @description
+# This is an example description for an example in readme.
+# @param {String} name Just a random name
+# @param {Boolean} work Does this actually work?
+# @returns {String} Just another value
+#
+```
+
+@TODO
+[TODO Wiki](https://github.com/adrianlee44/chalkboard/wiki/TODO)
+*/
+
+
+/*
+@chalk overview
+@name Supported Tags
+@description
+[Wiki Page](https://github.com/adrianlee44/chalkboard/wiki/Supported-Tags)
+*/
+
+
+/*
+@chalk overview
+@name Getting Started
+@description
+The easiest way to use chalkboard will probably be to install it globally.
+
+To do so, install the module with:
+```
+npm install -g chalkboard
+```
+*/
+
+
+/*
+@chalk overview
+@name Usage
+@description
+ Usage: chalkboard [options] [FILES...]
+ Options:
+   -h, --help           output usage information
+   -V, --version        output the version number
+   -o, --output [DIR]   Documentation output file
+   -j, --join [FILE]    Combine all documentation into one page
+   -f, --format [TYPE]  Output format. Default to markdown
+   -p, --private        Parse comments for private functions and varibles
+   -h, --header         Only parse the first comment block
+*/
+
+
 (function() {
-  var NEW_LINE, chalkboard, commentRegex, commentRegexStr, compile, configure, cwd, defaults, definitions, format, languages, lib, lnValueRegexStr, packages, parse, pkg, processFiles, requirePkg, util, write, _i, _len;
+  var NEW_LINE, chalkboard, commentRegex, commentRegexStr, compile, configure, cwd, defaults, definitions, format, languages, lib, lnValueRegexStr, packages, parse, pkg, processFiles, requirePkg, util, write, _, _i, _len;
 
   util = require("./lib/util");
 
@@ -18,7 +93,7 @@
     lib[requirePkg] = require(requirePkg);
   }
 
-  lib["_"] = require("underscore");
+  _ = require("underscore");
 
   commentRegexStr = "\\s*(?:@(\\w+))?(?:\\s*(.*))?";
 
@@ -78,21 +153,21 @@
     };
     _multiLineSetAttribute = function(value) {
       var object;
-      object = lib._(argObject).isEmpty() ? currentSection : argObject;
+      object = _(argObject).isEmpty() ? currentSection : argObject;
       if (value) {
         value += "  \n";
       }
       return _setAttribute(object, _getMultiLineKey(-1), value, definitions[_getMultiLineKey(-1)]);
     };
     _setArgObject = function() {
-      if (multiLineKey && !lib._(argObject).isEmpty()) {
+      if (multiLineKey && !_(argObject).isEmpty()) {
         _setAttribute(currentSection, _getMultiLineKey(0), argObject, definitions[_getMultiLineKey(0)]);
       }
       argObject = {};
       return multiLineKey = "";
     };
     _updateSection = function() {
-      if (hasComment && !lib._(currentSection).isEmpty()) {
+      if (hasComment && !_(currentSection).isEmpty()) {
         _setArgObject();
         allSections.push(currentSection);
         currentSection = {};
@@ -266,7 +341,7 @@
         footer += util.formatKeyValue(copyrightAndLicense.header.join(" and "), copyrightAndLicense.content.join("\n\n"), true, 2);
       }
       omitList.push("copyright", "license", "author", "email");
-      _ref = lib._(section).omit(omitList);
+      _ref = _(section).omit(omitList);
       for (key in _ref) {
         value = _ref[key];
         output += util.formatKeyValue(key, value);
@@ -306,7 +381,7 @@
       lib.fs.appendFileSync(output, content);
       return output;
     } else if (options.output != null) {
-      base = lib._(options.files).find(function(file) {
+      base = _(options.files).find(function(file) {
         return source.indexOf(file === 0);
       });
       filename = lib.path.basename(source, lib.path.extname(source));
@@ -325,8 +400,9 @@
   };
 
   configure = function(options) {
-    var joinfilePath, opts;
-    opts = lib._.extend({}, defaults, lib._(options).pick(lib._(defaults).keys()));
+    var joinfilePath, opts, optsKeys;
+    optsKeys = _(defaults).keys();
+    opts = _.extend({}, defaults, _.pick(options, optsKeys));
     if (opts.output && opts.join) {
       throw new Error("Cannot use both output and join option at the same time");
     }
@@ -341,7 +417,7 @@
   };
 
   processFiles = function(options) {
-    var doc, docPath, documents, opts, process, stat, userFile, _j, _len1, _ref, _results;
+    var doc, docPath, documents, findAll, opts, process, stat, userFile, _j, _len1, _ref, _results;
     opts = configure(options);
     process = function(path) {
       return lib.fs.readFile(path, function(error, buffer) {
@@ -366,7 +442,8 @@
       stat = lib.fs.statSync(userFile);
       if (stat.isDirectory()) {
         documents = lib.wrench.readdirSyncRecursive(userFile);
-        documents = lib._(documents).chain().flatten().unique().value();
+        findAll = _.compose(_.unique, _.flatten);
+        documents = findAll(documents);
         _results.push((function() {
           var _k, _len2, _results1;
           _results1 = [];

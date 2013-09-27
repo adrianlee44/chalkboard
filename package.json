@@ -1,12 +1,12 @@
 {
   "name": "chalkboard",
   "description": "Documentation generator for coffeescript",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "homepage": "https://github.com/adrianlee44/chalkboard",
   "author": {
     "name": "Adrian Lee",
-    "email": "adrian@radianstudio.com",
-    "url": "http://www.radianstudio.com"
+    "email": "adrian@adrianlee.me",
+    "url": "http://www.adrianlee.me"
   },
   "repository": {
     "type": "git",
