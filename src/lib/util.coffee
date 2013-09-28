@@ -1,7 +1,7 @@
 path            = require "path"
 _               = require "underscore"
 languages       = require "../resources/languages.json"
-definitions     = require "../resources/definitions.json"
+definitions     = require "../resources/definitions/base.json"
 commentRegexStr = "\\s*(?:@(\\w+))?(?:\\s*(.*))?"
 
 util = {

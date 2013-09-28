@@ -72,7 +72,7 @@ npm install -g chalkboard
 util        = require "./lib/util"
 pkg         = require "./package.json"
 languages   = require "./resources/languages.json"
-definitions = require "./resources/definitions.json"
+definitions = require "./resources/definitions/base.json"
 
 packages        = ["fs", "path", "wrench", "marked"]
 lib             = {}
