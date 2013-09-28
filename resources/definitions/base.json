@@ -30,6 +30,9 @@
     "variable": {
         "typeIdentifier": true
     },
+    "type": {
+        "typeIdentifier": true
+    },
     "default": {},
     "deprecated": {
         "identifier": true

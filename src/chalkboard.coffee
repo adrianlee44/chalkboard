@@ -227,6 +227,8 @@ parse = (code, lang, options = {})->
 
         # check if the current key is an type identifier
         if def.typeIdentifier and key?
+          type = if value then value else key
+
           if currentSection.type?
             console.log """
               Cannot have multiple types. [Current: #{currentSection.type}]
