@@ -6,7 +6,7 @@ exports.formatTest =
 
     parsed = [
       {chalk:"overview",name:"hello"}
-      {chalk:"function",type:"function",name:"wah"}
+      {chalk:"function",type:["function"],name:"wah"}
     ]
 
     formatted = chalkboard.format parsed, header: true

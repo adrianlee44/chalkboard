@@ -230,11 +230,9 @@ parse = (code, lang, options = {})->
           type = if value then value else key
 
           if currentSection.type?
-            console.log """
-              Cannot have multiple types. [Current: #{currentSection.type}]
-            """
+            currentSection.type.push type
           else
-            currentSection.type = key
+            currentSection.type = [key]
             continue
 
         # check if the current key is an access identifier
@@ -347,7 +345,7 @@ format = (sections, options) ->
       omitList.push "description"
 
     if section.type?
-      output += "Type: `#{section.type}`  \n\n"
+      output += "Type: `#{section.type.join(", ")}`  \n\n"
       omitList.push "type"
 
     if section.version?
