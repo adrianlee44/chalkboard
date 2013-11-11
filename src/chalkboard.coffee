@@ -309,7 +309,7 @@ parse = (code, lang, options = {})->
 # @param   {Object} options
 # @returns {String} Formatted markdown code
 #
-format = (sections, options) ->
+format = (sections, options = {}) ->
   output = ""
   footer = ""
   for section, index in sections
@@ -327,6 +327,7 @@ format = (sections, options) ->
         output += "#{section.name}"
         output += " (Deprecated)" if section.deprecated? and section.deprecated
         output += "\n---\n"
+        omitList.push "deprecated"
 
       else
         if section.url?
