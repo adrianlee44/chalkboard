@@ -82,7 +82,7 @@ npm install -g chalkboard
 
   languages = require("./resources/languages.json");
 
-  definitions = require("./resources/definitions.json");
+  definitions = require("./resources/definitions/base.json");
 
   packages = ["fs", "path", "wrench", "marked"];
 
@@ -114,7 +114,7 @@ npm install -g chalkboard
   };
 
   parse = function(code, lang, options) {
-    var allSections, argObject, argsMatch, blockRegex, currentSection, def, hasArgs, hasComment, inCommentBlock, key, line, lnMatch, match, matchingRegex, multiLineKey, toMatchRegex, value, _getMultiLineKey, _j, _len1, _multiLineSetAttribute, _ref, _setArgObject, _setAttribute, _updateSection;
+    var allSections, argObject, argsMatch, blockRegex, currentSection, def, hasArgs, hasComment, inCommentBlock, key, line, lnMatch, match, matchingRegex, multiLineKey, toMatchRegex, type, value, _getMultiLineKey, _j, _len1, _multiLineSetAttribute, _ref, _setArgObject, _setAttribute, _updateSection;
     if (options == null) {
       options = {};
     }
@@ -205,10 +205,11 @@ npm install -g chalkboard
           }
           hasArgs = (def.hasArgs != null) && def.hasArgs;
           if (def.typeIdentifier && (key != null)) {
+            type = value ? value : key;
             if (currentSection.type != null) {
-              console.log("Cannot have multiple types. [Current: " + currentSection.type + "]");
+              currentSection.type.push(type);
             } else {
-              currentSection.type = key;
+              currentSection.type = [key];
               continue;
             }
           }
@@ -273,6 +274,9 @@ npm install -g chalkboard
 
   format = function(sections, options) {
     var copyrightAndLicense, footer, index, key, omitList, output, section, value, _j, _len1, _ref;
+    if (options == null) {
+      options = {};
+    }
     output = "";
     footer = "";
     for (index = _j = 0, _len1 = sections.length; _j < _len1; index = ++_j) {
@@ -292,6 +296,7 @@ npm install -g chalkboard
             output += " (Deprecated)";
           }
           output += "\n---\n";
+          omitList.push("deprecated");
         } else {
           if (section.url != null) {
             if (section.url != null) {
@@ -311,7 +316,7 @@ npm install -g chalkboard
         omitList.push("description");
       }
       if (section.type != null) {
-        output += "Type: `" + section.type + "`  \n\n";
+        output += "Type: `" + (section.type.join(", ")) + "`  \n\n";
         omitList.push("type");
       }
       if (section.version != null) {
