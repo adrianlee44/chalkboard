@@ -1,5 +1,7 @@
 {
   ".coffee":  {"name": "coffeescript", "symbol": "#", "block": "###"},
   "Cakefile": {"name": "coffeescript", "symbol": "#", "block": "###"},
-  ".js":      {"name": "javascript", "symbol": "//", "start": "/*", "end": "*/"}
+  ".js":      {"name": "javascript", "symbol": "//", "start": "/*", "end": "*/"},
+  ".styl":    {"name": "stylus", "symbol": "//", "start": "/*", "end": "*/"},
+  ".less":    {"name": "less", "symbol": "//", "start": "/*", "end": "*/"}
 }
