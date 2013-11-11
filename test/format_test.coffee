@@ -133,3 +133,49 @@ exports.formatTest =
     test.equal formatted2, expected2, "Should render author"
 
     test.done()
+
+  "copyright and license": (test) ->
+    test.expect 3
+
+    parsed = [
+      {chalk: "overview", name:"Test", copyright:"Somone 2013"}
+    ]
+    formatted = chalkboard.format parsed
+    expected  = "\nTest\n===\n## Copyright\nSomone 2013\n"
+    test.equal formatted, expected, "Should render copyright"
+
+    parsed2 = [
+      {chalk: "overview", name:"Test", license:"MIT"}
+    ]
+    formatted2 = chalkboard.format parsed2
+    expected2  = "\nTest\n===\n## License\nMIT\n"
+    test.equal formatted2, expected2, "Should render license"
+
+    parsed3 = [
+      {chalk: "overview", name:"Test", license:"MIT", copyright:"Someone 2013"}
+    ]
+    formatted3 = chalkboard.format parsed3
+    expected3  = "\nTest\n===\n## Copyright and license\nSomeone 2013\n\nMIT\n"
+    test.equal formatted3, expected3, "Should render license and copyright"
+
+    test.done()
+
+  "other tags": (test) ->
+    tags = [
+      {tag: "default", value: "123", upper: "Default"}
+      {tag: "since", value: "yesterday", upper: "Since"}
+      {tag: "param", value: "123", upper: "Parameters"}
+      {tag: "TODO", value: "something", upper: "TODO"}
+      {tag: "example", value: "chalkboard hello", upper: "Example"}
+    ]
+    test.expect tags.length
+    nameOut = "\nTest\n===\n"
+    for tag in tags
+      parsed = [{chalk:"overview", name:"Test"}]
+      parsed[0][tag.tag] = tag.value
+
+      formatted = chalkboard.format parsed
+      expected  = "#{nameOut}### #{tag.upper}\n#{tag.value}\n"
+      test.equal formatted, expected, "Render @#{tag.tag} correctly"
+
+    test.done()
