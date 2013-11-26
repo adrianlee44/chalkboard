@@ -330,6 +330,24 @@ exports.parseTest =
     test.equal ret[0].version, "9000+"
     test.done()
 
+  "maintain comment whitespaces": (test) ->
+    code = """
+      ###
+      @chalk
+      @name Testing
+      @example
+      ```
+      testObj =
+        hello: "123"
+        world: "321"
+      ```
+      ###
+    """
+    ret      = chalkboard.parse code, @lang, {}
+    expected = "```  \ntestObj =  \n  hello: \"123\"  \n  world: \"321\"  \n```  \n"
+    test.equal ret[0].example, expected
+    test.done()
+
 exports.jsParseTest =
   setUp: (callback) ->
     @lang =

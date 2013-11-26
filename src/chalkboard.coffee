@@ -79,11 +79,9 @@ lib             = {}
 lib[requirePkg] = require requirePkg for requirePkg in packages
 _               = require "underscore"
 
-commentRegexStr = "\\s*(?:@(\\w+))?(?:\\s*(.*))?"
-lnValueRegexStr = "\\s*(.*)"
-commentRegex    = new RegExp commentRegexStr
-NEW_LINE        = /\n\r?/
-cwd             = process.cwd()
+commentRegex = /^\s*@(\w+)(?:\s*(.*))?$/
+NEW_LINE     = /\n\r?/
+cwd          = process.cwd()
 
 defaults =
   format:  "markdown"
@@ -207,6 +205,10 @@ parse = (code, lang, options = {})->
 
       # Only parse section which user have specified
       if key is "chalk"
+        # NOTE: With new section, the previous section comments should be stored and cleaned
+        _updateSection()
+
+        # Starting a new section
         hasComment           = true
         currentSection.chalk = value
         continue
@@ -288,9 +290,11 @@ parse = (code, lang, options = {})->
 
     # if the current line is part of multiple line tag
     else if multiLineKey and ((lnMatch = line.match lang.lineRegex) or inCommentBlock)
-      _multiLineSetAttribute(lnMatch?[1] or line)
+      content = if inCommentBlock then line else (lnMatch?[1] or line)
+      _multiLineSetAttribute content
 
-    else
+    # NOTE:
+    else if not inCommentBlock
       _updateSection()
 
   # Push the last section if there was no new line at the
