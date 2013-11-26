@@ -74,7 +74,7 @@ npm install -g chalkboard
 
 
 (function() {
-  var NEW_LINE, chalkboard, commentRegex, commentRegexStr, compile, configure, cwd, defaults, definitions, format, languages, lib, lnValueRegexStr, packages, parse, pkg, processFiles, requirePkg, util, write, _, _i, _len;
+  var NEW_LINE, chalkboard, commentRegex, compile, configure, cwd, defaults, definitions, format, languages, lib, packages, parse, pkg, processFiles, requirePkg, util, write, _, _i, _len;
 
   util = require("./lib/util");
 
@@ -95,11 +95,7 @@ npm install -g chalkboard
 
   _ = require("underscore");
 
-  commentRegexStr = "\\s*(?:@(\\w+))?(?:\\s*(.*))?";
-
-  lnValueRegexStr = "\\s*(.*)";
-
-  commentRegex = new RegExp(commentRegexStr);
+  commentRegex = /^\s*@(\w+)(?:\s*(.*))?$/;
 
   NEW_LINE = /\n\r?/;
 
@@ -114,7 +110,7 @@ npm install -g chalkboard
   };
 
   parse = function(code, lang, options) {
-    var allSections, argObject, argsMatch, blockRegex, currentSection, def, hasArgs, hasComment, inCommentBlock, key, line, lnMatch, match, matchingRegex, multiLineKey, toMatchRegex, type, value, _getMultiLineKey, _j, _len1, _multiLineSetAttribute, _ref, _setArgObject, _setAttribute, _updateSection;
+    var allSections, argObject, argsMatch, blockRegex, content, currentSection, def, hasArgs, hasComment, inCommentBlock, key, line, lnMatch, match, matchingRegex, multiLineKey, toMatchRegex, type, value, _getMultiLineKey, _j, _len1, _multiLineSetAttribute, _ref, _setArgObject, _setAttribute, _updateSection;
     if (options == null) {
       options = {};
     }
@@ -190,6 +186,7 @@ npm install -g chalkboard
         key = match[1];
         value = match[2];
         if (key === "chalk") {
+          _updateSection();
           hasComment = true;
           currentSection.chalk = value;
           continue;
@@ -263,8 +260,9 @@ npm install -g chalkboard
           _multiLineSetAttribute(value);
         }
       } else if (multiLineKey && ((lnMatch = line.match(lang.lineRegex)) || inCommentBlock)) {
-        _multiLineSetAttribute((lnMatch != null ? lnMatch[1] : void 0) || line);
-      } else {
+        content = inCommentBlock ? line : (lnMatch != null ? lnMatch[1] : void 0) || line;
+        _multiLineSetAttribute(content);
+      } else if (!inCommentBlock) {
         _updateSection();
       }
     }
