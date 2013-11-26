@@ -46,15 +46,15 @@ npm install -g chalkboard
 Usage
 ---
 
-Usage: chalkboard [options] [FILES...]  
-Options:  
--h, --help           output usage information  
--V, --version        output the version number  
--o, --output [DIR]   Documentation output file  
--j, --join [FILE]    Combine all documentation into one page  
--f, --format [TYPE]  Output format. Default to markdown  
--p, --private        Parse comments for private functions and varibles  
--h, --header         Only parse the first comment block  
+ Usage: chalkboard [options] [FILES...]  
+ Options:  
+   -h, --help           output usage information  
+   -V, --version        output the version number  
+   -o, --output [DIR]   Documentation output file  
+   -j, --join [FILE]    Combine all documentation into one page  
+   -f, --format [TYPE]  Output format. Default to markdown  
+   -p, --private        Parse comments for private functions and varibles  
+   -h, --header         Only parse the first comment block  
   
 
 parse
