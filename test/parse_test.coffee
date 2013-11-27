@@ -348,6 +348,20 @@ exports.parseTest =
     test.equal ret[0].example, expected
     test.done()
 
+  "maintain valid number of whitespaces": (test) ->
+    code = """
+      code
+        ###
+        @chalk
+        @name Testing
+        @description
+        Hello
+        ###
+    """
+    ret = chalkboard.parse code, @lang, {}
+    test.equal ret[0].description, "Hello  \n"
+    test.done()
+
 exports.jsParseTest =
   setUp: (callback) ->
     @lang =

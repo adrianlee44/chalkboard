@@ -102,9 +102,9 @@ defaults =
 # @returns {Array}          List of objects with all the comment block
 #
 parse = (code, lang, options = {})->
-  hasComment     = false
-  multiLineKey   = ""
-  inCommentBlock = false
+  hasComment        = false
+  multiLineKey      = ""
+  commentBlockIndex = -1
 
   allSections    = []
   currentSection = {}
@@ -191,13 +191,13 @@ parse = (code, lang, options = {})->
   for line in code.split(NEW_LINE)
 
     # Check for starting and ending comment block
-    blockRegex = if inCommentBlock then lang.endRegex else lang.startRegex
-    if line.match(blockRegex or lang.blockRegex)
-      inCommentBlock = not inCommentBlock
-      _updateSection() unless inCommentBlock
+    blockRegex = if commentBlockIndex > -1 then lang.endRegex else lang.startRegex
+    if match = line.match(blockRegex or lang.blockRegex)
+      commentBlockIndex = if commentBlockIndex > -1 then -1 else match.index
+      _updateSection() if commentBlockIndex is -1
       continue
 
-    toMatchRegex = if inCommentBlock then commentRegex else lang.commentRegex
+    toMatchRegex = if commentBlockIndex > -1 then commentRegex else lang.commentRegex
 
     if match = line.match toMatchRegex
       key   = match[1]
@@ -289,12 +289,12 @@ parse = (code, lang, options = {})->
       _multiLineSetAttribute value if multiLineKey and value?
 
     # if the current line is part of multiple line tag
-    else if multiLineKey and ((lnMatch = line.match lang.lineRegex) or inCommentBlock)
-      content = if inCommentBlock then line else (lnMatch?[1] or line)
+    else if multiLineKey and ((lnMatch = line.match lang.lineRegex) or commentBlockIndex > -1)
+      line    = line.substr commentBlockIndex
+      content = if commentBlockIndex > -1 then line else (lnMatch?[1] or line)
       _multiLineSetAttribute content
 
-    # NOTE:
-    else if not inCommentBlock
+    else if commentBlockIndex is -1
       _updateSection()
 
   # Push the last section if there was no new line at the
