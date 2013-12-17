@@ -149,7 +149,7 @@ parse = (code, lang, options = {})->
 
   _multiLineSetAttribute = (value) ->
     object = if _(argObject).isEmpty() then currentSection else argObject
-    value += "  \n" if value
+    value += "  \n"
     _setAttribute(object,
       _getMultiLineKey(-1),
       value,
