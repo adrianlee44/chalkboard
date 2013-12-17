@@ -4,11 +4,13 @@
 [![Build Status](https://travis-ci.org/adrianlee44/chalkboard.png?branch=master)](https://travis-ci.org/adrianlee44/chalkboard)  
 An npm package that generate better documentation  
   
+  
 ### Dependencies
 - commander  
 - wrench  
 - marked  
 - underscore  
+  
 
 ### Example
 ```  
@@ -22,6 +24,7 @@ An npm package that generate better documentation
 # @returns {String} Just another value  
 #  
 ```  
+  
 
 ### TODO
 [TODO Wiki](https://github.com/adrianlee44/chalkboard/wiki/TODO)  
@@ -37,6 +40,7 @@ Getting Started
 ---
 
 The easiest way to use chalkboard will probably be to install it globally.  
+  
 To do so, install the module with:  
 ```  
 npm install -g chalkboard  
