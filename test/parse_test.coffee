@@ -376,6 +376,21 @@ exports.parseTest =
     test.equal ret[0].description, "Testing  \n  \nwhitespaces  \n"
     test.done()
 
+  "Keep unsupported tag as normal text": (test) ->
+    code = """
+      ###
+      @chalk
+      @description
+      This is some unsupported tags,
+      @static
+      @random
+      @text
+      ###
+    """
+    ret = chalkboard.parse code, @lang, {}
+    test.equal ret[0].description, "This is some unsupported tags,  \n@static  \n@random  \n@text  \n"
+    test.done()
+
 exports.jsParseTest =
   setUp: (callback) ->
     @lang =

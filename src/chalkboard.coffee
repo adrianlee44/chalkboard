@@ -215,12 +215,11 @@ parse = (code, lang, options = {})->
 
       continue unless hasComment
 
-      if key?
-        _setArgObject()
+      # Get the definition for the key
+      def = definitions[key]
 
-        # Get the definition for the key
-        def = definitions[key]
-        continue unless def?
+      if key? and def?
+        _setArgObject()
 
         hasArgs = def.hasArgs? and def.hasArgs
 
@@ -284,9 +283,12 @@ parse = (code, lang, options = {})->
         if value?
           _setAttribute currentSection, key, value, def
 
+        continue
+
       # When key doesn't exist and multi line key is set,
       # add the value to the original key
-      _multiLineSetAttribute value if multiLineKey and value?
+      setValue = if key? and not def? then line else value
+      _multiLineSetAttribute setValue if multiLineKey and setValue?
 
     # if the current line is part of multiple line tag
     else if multiLineKey and ((lnMatch = line.match lang.lineRegex) or commentBlockIndex > -1)
