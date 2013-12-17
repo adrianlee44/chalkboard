@@ -110,13 +110,13 @@ npm install -g chalkboard
   };
 
   parse = function(code, lang, options) {
-    var allSections, argObject, argsMatch, blockRegex, content, currentSection, def, hasArgs, hasComment, inCommentBlock, key, line, lnMatch, match, matchingRegex, multiLineKey, toMatchRegex, type, value, _getMultiLineKey, _j, _len1, _multiLineSetAttribute, _ref, _setArgObject, _setAttribute, _updateSection;
+    var allSections, argObject, argsMatch, blockRegex, commentBlockIndex, content, currentSection, def, hasArgs, hasComment, key, line, lnMatch, match, matchingRegex, multiLineKey, setValue, toMatchRegex, type, value, _getMultiLineKey, _j, _len1, _multiLineSetAttribute, _ref, _setArgObject, _setAttribute, _updateSection;
     if (options == null) {
       options = {};
     }
     hasComment = false;
     multiLineKey = "";
-    inCommentBlock = false;
+    commentBlockIndex = -1;
     allSections = [];
     currentSection = {};
     argObject = {};
@@ -150,9 +150,7 @@ npm install -g chalkboard
     _multiLineSetAttribute = function(value) {
       var object;
       object = _(argObject).isEmpty() ? currentSection : argObject;
-      if (value) {
-        value += "  \n";
-      }
+      value += "  \n";
       return _setAttribute(object, _getMultiLineKey(-1), value, definitions[_getMultiLineKey(-1)]);
     };
     _setArgObject = function() {
@@ -173,15 +171,15 @@ npm install -g chalkboard
     _ref = code.split(NEW_LINE);
     for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
       line = _ref[_j];
-      blockRegex = inCommentBlock ? lang.endRegex : lang.startRegex;
-      if (line.match(blockRegex || lang.blockRegex)) {
-        inCommentBlock = !inCommentBlock;
-        if (!inCommentBlock) {
+      blockRegex = commentBlockIndex > -1 ? lang.endRegex : lang.startRegex;
+      if (match = line.match(blockRegex || lang.blockRegex)) {
+        commentBlockIndex = commentBlockIndex > -1 ? -1 : match.index;
+        if (commentBlockIndex === -1) {
           _updateSection();
         }
         continue;
       }
-      toMatchRegex = inCommentBlock ? commentRegex : lang.commentRegex;
+      toMatchRegex = commentBlockIndex > -1 ? commentRegex : lang.commentRegex;
       if (match = line.match(toMatchRegex)) {
         key = match[1];
         value = match[2];
@@ -194,12 +192,9 @@ npm install -g chalkboard
         if (!hasComment) {
           continue;
         }
-        if (key != null) {
+        def = definitions[key];
+        if ((key != null) && (def != null)) {
           _setArgObject();
-          def = definitions[key];
-          if (def == null) {
-            continue;
-          }
           hasArgs = (def.hasArgs != null) && def.hasArgs;
           if (def.typeIdentifier && (key != null)) {
             type = value ? value : key;
@@ -255,14 +250,17 @@ npm install -g chalkboard
           if (value != null) {
             _setAttribute(currentSection, key, value, def);
           }
+          continue;
         }
-        if (multiLineKey && (value != null)) {
-          _multiLineSetAttribute(value);
+        setValue = (key != null) && (def == null) ? line : value;
+        if (multiLineKey && (setValue != null)) {
+          _multiLineSetAttribute(setValue);
         }
-      } else if (multiLineKey && ((lnMatch = line.match(lang.lineRegex)) || inCommentBlock)) {
-        content = inCommentBlock ? line : (lnMatch != null ? lnMatch[1] : void 0) || line;
+      } else if (multiLineKey && ((lnMatch = line.match(lang.lineRegex)) || commentBlockIndex > -1)) {
+        line = line.substr(commentBlockIndex);
+        content = commentBlockIndex > -1 ? line : (lnMatch != null ? lnMatch[1] : void 0) || line;
         _multiLineSetAttribute(content);
-      } else if (!inCommentBlock) {
+      } else if (commentBlockIndex === -1) {
         _updateSection();
       }
     }
