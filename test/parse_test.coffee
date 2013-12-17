@@ -362,6 +362,20 @@ exports.parseTest =
     test.equal ret[0].description, "Hello  \n"
     test.done()
 
+  "preserve empty line between text bock": (test) ->
+    code = """
+      ###
+      @chalk
+      @description
+      Testing
+
+      whitespaces
+      ###
+    """
+    ret = chalkboard.parse code, @lang, {}
+    test.equal ret[0].description, "Testing  \n  \nwhitespaces  \n"
+    test.done()
+
 exports.jsParseTest =
   setUp: (callback) ->
     @lang =
