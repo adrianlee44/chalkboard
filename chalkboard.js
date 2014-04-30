@@ -1,3 +1,4 @@
+
 /*
 @chalk overview
 @name Chalkboard.js
@@ -20,20 +21,20 @@ An npm package that generate better documentation
 
 @example
 ```
-#
-# @chalk overview
-# @name example
-# @description
-# This is an example description for an example in readme.
-# @param {String} name Just a random name
-# @param {Boolean} work Does this actually work?
-# @returns {String} Just another value
-#
+ *
+ * @chalk overview
+ * @name example
+ * @description
+ * This is an example description for an example in readme.
+ * @param {String} name Just a random name
+ * @param {Boolean} work Does this actually work?
+ * @returns {String} Just another value
+ *
 ```
 
 @TODO
 [TODO Wiki](https://github.com/adrianlee44/chalkboard/wiki/TODO)
-*/
+ */
 
 
 /*
@@ -41,7 +42,7 @@ An npm package that generate better documentation
 @name Supported Tags
 @description
 [Wiki Page](https://github.com/adrianlee44/chalkboard/wiki/Supported-Tags)
-*/
+ */
 
 
 /*
@@ -54,7 +55,7 @@ To do so, install the module with:
 ```
 npm install -g chalkboard
 ```
-*/
+ */
 
 
 /*
@@ -70,8 +71,7 @@ npm install -g chalkboard
    -f, --format [TYPE]  Output format. Default to markdown
    -p, --private        Parse comments for private functions and varibles
    -h, --header         Only parse the first comment block
-*/
-
+ */
 
 (function() {
   var NEW_LINE, chalkboard, commentRegex, compile, configure, cwd, defaults, definitions, format, languages, lib, packages, parse, pkg, processFiles, requirePkg, util, write, _, _i, _len;
