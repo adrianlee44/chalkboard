@@ -19,6 +19,17 @@ util = {
 
   #
   # @function
+  # @name escape
+  # @description
+  # Escape special regular expression symbol
+  # @param {String} text Regular expression text
+  # @returns {String} Escaped text
+  #
+  escape: (text) ->
+    text.replace /[-[\]{}()*+?.,\\\/^$|#\s]/g, "\\$&"
+
+  #
+  # @function
   # @nam repeatChar
   # @description
   # Repeat a character multiple times
@@ -37,13 +48,14 @@ util = {
     # and move onto the next file
     return null unless lang?
 
-    regex = "^\\s*(?:#{lang.symbol}){1,2}#{commentRegexStr}"
+    symbol            = util.escape lang.symbol
+    regex             = "^\\s*(?:#{symbol}){1,2}#{commentRegexStr}"
     lang.commentRegex = new RegExp regex
-    lang.lineRegex    = new RegExp "^\\s*(?:#{lang.symbol}){1,2}\\s+(.*)"
-    lang.blockRegex   = new RegExp lang.block
+    lang.lineRegex    = new RegExp "^\\s*(?:#{symbol}){1,2}\\s+(.*)"
+    lang.blockRegex   = new RegExp util.escape(lang.block) if lang.block?
 
-    lang.startRegex = new RegExp lang.start if lang.start?
-    lang.endRegex   = new RegExp lang.end   if lang.end?
+    lang.startRegex = new RegExp util.escape(lang.start) if lang.start?
+    lang.endRegex   = new RegExp util.escape(lang.end)   if lang.end?
 
     return lang
 

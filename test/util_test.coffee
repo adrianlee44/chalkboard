@@ -22,11 +22,26 @@ exports.utilTest =
       name:         'coffeescript'
       symbol:       '#'
       block:        '###'
-      lineRegex:    /^\s*(?:#){1,2}\s+(.*)/
-      commentRegex: /^\s*(?:#){1,2}\s*(?:@(\w+))?(?:\s*(.*))?/
-      blockRegex:   /###/
+      lineRegex:    /^\s*(?:\#){1,2}\s+(.*)/
+      commentRegex: /^\s*(?:\#){1,2}\s*(?:@(\w+))?(?:\s*(.*))?/
+      blockRegex:   /\#\#\#/
 
     test.deepEqual util.getLanguages("/test/test.coffee"), validSettings
+
+    test.done()
+
+  "Get languages test for Javascript": (test) ->
+    validSettings =
+      name:         'javascript'
+      symbol:       '//'
+      start:        '/*'
+      end:          '*/'
+      lineRegex:    /^\s*(?:\/\/){1,2}\s+(.*)/
+      commentRegex: /^\s*(?:\/\/){1,2}\s*(?:@(\w+))?(?:\s*(.*))?/
+      startRegex:   /\/\*/
+      endRegex:     /\*\//
+
+    test.deepEqual util.getLanguages("/test/test.js"), validSettings
 
     test.done()
 
