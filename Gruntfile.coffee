@@ -34,33 +34,18 @@ module.exports = (grunt) ->
 
       src:
         files: "src/**/*.coffee"
-        tasks: ["coffeelint:src", "coffee:src", "nodeunit", "chalkboard"]
+        tasks: ["coffeelint:src", "nodeunit", "chalkboard"]
 
       test:
         files: "<%= coffeelint.test.files.src %>"
         tasks: ["coffeelint:test", "nodeunit"]
 
-    coffee:
-      options:
-        join: true
-      src:
-        files: [
-          {
-            expand: true
-            flatten: false
-            ext: ".js"
-            cwd: "src/"
-            src: ["**/*.coffee"]
-            dest: ""
-          }
-        ]
-
     chalkboard:
       src:
         files:
-          "README.md": ["src/*.coffee"]
+          "README.md": ["src/chalkboard.coffee"]
 
   require('matchdep').filterDev('grunt-*').forEach grunt.loadNpmTasks
 
   # Default task.
-  grunt.registerTask "default", ["coffee", "coffeelint", "nodeunit", "chalkboard"]
+  grunt.registerTask "default", ["coffeelint", "nodeunit", "chalkboard"]
