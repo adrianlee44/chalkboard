@@ -3,12 +3,13 @@
 @name Chalkboard.js
 
 @description
-[![Build Status](https://travis-ci.org/adrianlee44/chalkboard.png?branch=master)](https://travis-ci.org/adrianlee44/chalkboard)
+[![Build Status](http://img.shields.io/travis/adrianlee44/chalkboard.svg?style=flat)](https://travis-ci.org/adrianlee44/chalkboard)
 An npm package that generate better documentation
+
 
 @author Adrian Lee
 @email adrian@adrianlee.me
-@copyright 2013 Adrian Lee
+@copyright 2014 Adrian Lee
 @url https://github.com/adrianlee44/chalkboard
 @license MIT
 
@@ -19,7 +20,7 @@ An npm package that generate better documentation
 - lodash
 
 @example
-```
+```coffeescript
 #
 # @chalk overview
 # @name example
@@ -37,13 +38,6 @@ An npm package that generate better documentation
 
 ###
 @chalk overview
-@name Supported Tags
-@description
-[Wiki Page](https://github.com/adrianlee44/chalkboard/wiki/Supported-Tags)
-###
-
-###
-@chalk overview
 @name Getting Started
 @description
 The easiest way to use chalkboard will probably be to install it globally.
@@ -52,6 +46,13 @@ To do so, install the module with:
 ```
 npm install -g chalkboard
 ```
+###
+
+###
+@chalk overview
+@name Supported Tags
+@description
+[Wiki Page](https://github.com/adrianlee44/chalkboard/wiki/Supported-Tags)
 ###
 
 ###
