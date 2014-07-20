@@ -21,8 +21,8 @@
       "url": "https://github.com/adrianlee44/chalkboard/blob/master/LICENSE-MIT"
     }
   ],
-  "bin": "bin/chalkboard",
-  "main": "./chalkboard.js",
+  "bin": "./bin/chalkboard",
+  "main": "./src/chalkboard",
   "engines": {
     "node": ">= 0.8.0"
   },
@@ -30,13 +30,12 @@
     "test": "grunt default"
   },
   "devDependencies": {
-    "grunt-contrib-nodeunit": "^0.3.3",
-    "grunt-contrib-watch": "^0.6.1",
-    "grunt": "~0.4.1",
-    "grunt-contrib-coffee": "^0.10.1",
-    "grunt-coffeelint": "0.0.10",
     "grunt-chalkboard": "~0.2.2",
-    "matchdep": "^0.3.0"
+    "grunt-coffeelint": "0.0.7",
+    "grunt-contrib-nodeunit": "~0.2.1",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt": "~0.4.1",
+    "matchdep": "~0.1.2"
   },
   "keywords": [
     "javascript",
@@ -45,9 +44,10 @@
     "documentation"
   ],
   "dependencies": {
+    "coffee-script": "^1.7.1",
     "commander": "~1.1.1",
-    "wrench": "~1.4.4",
-    "underscore": "~1.4.4",
-    "marked": "~0.2.8"
+    "lodash": "^2.4.1",
+    "marked": "~0.2.8",
+    "wrench": "~1.4.4"
   }
 }

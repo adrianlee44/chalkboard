@@ -1,7 +1,7 @@
 path            = require "path"
-_               = require "underscore"
-languages       = require "../resources/languages.json"
-definitions     = require "../resources/definitions/base.json"
+_               = require "lodash"
+languages       = require "../../resources/languages.json"
+definitions     = require "../../resources/definitions/base.json"
 commentRegexStr = "\\s*(?:@(\\w+))?(?:\\s*(.*))?"
 
 util = {
@@ -79,11 +79,11 @@ util = {
 
     output  = util.repeatChar "#", headerLevel
     output += " #{util.capitalize(displayName)}\n"
-    if _(value).isArray()
+    if _.isArray(value)
       for element in value
 
         # returns and param
-        if _(element).isObject()
+        if _.isObject(element)
           if element.name?
             output += "**#{element.name}**  \n"
           if element.type?
@@ -95,7 +95,7 @@ util = {
         else
           output += "-   #{element}  \n"
 
-    else if _(value).isString()
+    else if _.isString(value)
       output += "#{value}"
 
     output += "\n" if newLine

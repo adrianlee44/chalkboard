@@ -4,15 +4,17 @@
  * Chalkboard
  * https://github.com/adrianlee44/chalkboard
  *
- * Copyright (c) 2013 Adrian Lee
+ * Copyright (c) 2014 Adrian Lee
  * Licensed under the MIT license.
  */
 
 var path = require('path'),
     fs   = require('fs'),
-    dir  = path.join(path.dirname(fs.realpathSync(__filename)), '../'),
-    pkg  = require(dir + 'package.json'),
+    dir  = path.join(path.dirname(fs.realpathSync(__filename)), '../src'),
+    pkg  = require(path.join(path.dirname(fs.realpathSync(__filename)), '../package.json')),
     commander = require('commander');
+
+require('coffee-script/register');
 
 commander
 	.version(pkg.version)
@@ -25,7 +27,7 @@ commander
 	.parse(process.argv);
 
 	if (commander.args.length) {
-		require(dir + 'chalkboard.js').processFiles(commander);
+		require(path.join(dir, 'chalkboard')).processFiles(commander);
 	} else {
 		console.log(commander.helpInformation());
 	}

@@ -1,4 +1,6 @@
-chalkboard = require "../chalkboard.js"
+require "coffee-script/register"
+
+chalkboard = require "../src/chalkboard"
 
 exports.configureTest =
   "Both output and join are set": (test) ->

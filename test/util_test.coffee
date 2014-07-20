@@ -1,4 +1,6 @@
-util = require "../lib/util"
+require "coffee-script/register"
+
+util = require "../src/lib/util"
 
 exports.utilTest =
   "Capitalize Test": (test) ->
