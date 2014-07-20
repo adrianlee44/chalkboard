@@ -1,19 +1,20 @@
 
 [Chalkboard.js](https://github.com/adrianlee44/chalkboard)
 ===
-[![Build Status](https://travis-ci.org/adrianlee44/chalkboard.png?branch=master)](https://travis-ci.org/adrianlee44/chalkboard)  
+[![Build Status](http://img.shields.io/travis/adrianlee44/chalkboard.svg?style=flat)](https://travis-ci.org/adrianlee44/chalkboard)  
 An npm package that generate better documentation  
+  
   
   
 ### Dependencies
 - commander  
 - wrench  
 - marked  
-- underscore  
+- lodash  
   
 
 ### Example
-```  
+```coffeescript  
 #  
 # @chalk overview  
 # @name example  
@@ -30,12 +31,6 @@ An npm package that generate better documentation
 [TODO Wiki](https://github.com/adrianlee44/chalkboard/wiki/TODO)  
 
 
-Supported Tags
----
-
-[Wiki Page](https://github.com/adrianlee44/chalkboard/wiki/Supported-Tags)  
-  
-
 Getting Started
 ---
 
@@ -45,6 +40,12 @@ To do so, install the module with:
 ```  
 npm install -g chalkboard  
 ```  
+  
+
+Supported Tags
+---
+
+[Wiki Page](https://github.com/adrianlee44/chalkboard/wiki/Supported-Tags)  
   
 
 Usage
@@ -60,118 +61,9 @@ Usage
    -p, --private        Parse comments for private functions and varibles  
    -h, --header         Only parse the first comment block  
   
-
-parse
----
-
-Run through code and parse out all the comments  
-  
-Type: `function`  
-
-### Parameters
-**code**  
-Type: `String`  
-Source code to be parsed  
-  
-**lang**  
-Type: `Object`  
-Language settings for the file  
-  
-**options**  
-Type: `Object`  
-User settings (default {})  
-  
-
-### Returns
-Type: `Array`  
-List of objects with all the comment block  
-  
-
-
-format
----
-
-Format comment sections into readable format  
-  
-Type: `function`  
-
-### Parameters
-**sections**  
-Type: `Array`  
-List of comment sections  
-  
-**options**  
-Type: `Object`  
-
-### Returns
-Type: `String`  
-Formatted markdown code  
-  
-
-
-compile
----
-
-Parse code into documentation  
-  
-Type: `function`  
-
-### Parameters
-**code**  
-Type: `String`  
-Source code  
-  
-**options**  
-Type: `Object`  
-User options  
-  
-**filepath**  
-Type: `String`  
-Path of the original file  
-  
-
-### Returns
-Type: `String`  
-Formatted documentation  
-  
-
-
-write
----
-
-Write parsed content into the output file  
-  
-Type: `function`  
-
-### Parameters
-**source**  
-Type: `String`  
-File path of original file  
-  
-**content**  
-Type: `String`  
-Content to write to file  
-  
-**options**  
-Type: `Object`  
-
-
-configure
----
-
-Configurate user options and validate file paths  
-  
-Type: `function`  
-
-### Parameters
-**options**  
-Type: `Object`  
-User configurations  
-  
-
 ## Author
 Adrian Lee (adrian@adrianlee.me)
 ## Copyright and license
-2013 Adrian Lee
+2014 Adrian Lee
 
 MIT
