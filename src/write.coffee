@@ -10,6 +10,7 @@
 #
 
 _      = require "lodash"
+cwd    = process.cwd()
 fs     = require "fs"
 path   = require "path"
 wrench = require "wrench"

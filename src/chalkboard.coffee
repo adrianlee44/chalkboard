@@ -75,6 +75,7 @@ languages = require "../resources/languages.json"
 parse     = require "./parse"
 pkg       = require "../package.json"
 write     = require "./write"
+util      = require "./lib/util"
 
 packages        = ["fs", "path", "wrench", "marked"]
 lib             = {}
