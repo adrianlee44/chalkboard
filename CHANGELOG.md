@@ -1,4 +1,4 @@
-# v0.5.5 (2014/08/14)
+# v0.5.0 (2014/08/14)
 - Code restructure
 - Updated all 3rd dependencies to the latest version
 
