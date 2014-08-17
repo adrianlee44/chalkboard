@@ -1,3 +1,6 @@
+# v0.5.1 (2014/08/17)
+- Fixed a bug when using Chalkboard
+
 # v0.5.0 (2014/08/14)
 - Code restructure
 - Updated all 3rd dependencies to the latest version
