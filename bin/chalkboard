@@ -10,11 +10,9 @@
 
 var path = require('path'),
     fs   = require('fs'),
-    dir  = path.join(path.dirname(fs.realpathSync(__filename)), '../src'),
+    dir  = path.join(path.dirname(fs.realpathSync(__filename)), '../lib'),
     pkg  = require(path.join(path.dirname(fs.realpathSync(__filename)), '../package.json')),
     commander = require('commander');
-
-require('coffee-script/register');
 
 commander
 	.version(pkg.version)

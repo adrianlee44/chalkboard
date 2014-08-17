@@ -22,19 +22,20 @@
     }
   ],
   "bin": "./bin/chalkboard",
-  "main": "./src/chalkboard",
+  "main": "./lib/chalkboard",
   "engines": {
     "node": ">= 0.8.0"
   },
   "scripts": {
+    "prepublish": "./node_modules/.bin/coffee -co lib/ src/",
     "test": "grunt default"
   },
   "devDependencies": {
+    "grunt": "~0.4.1",
     "grunt-chalkboard": "~0.2.2",
     "grunt-coffeelint": "0.0.13",
     "grunt-contrib-nodeunit": "~0.4.1",
     "grunt-contrib-watch": "~0.6.1",
-    "grunt": "~0.4.1",
     "matchdep": "~0.3.0"
   },
   "keywords": [
